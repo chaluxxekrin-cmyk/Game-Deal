@@ -102,11 +102,18 @@ const PROXIES = [
 const CACHE_KEY = 'steamdeal_v4';
 const CACHE_TTL = 15 * 60 * 1000;
 const THB_RATE = 33;
+const LIVE_API_BASE = (window.STEAMDEAL_API_BASE || '').replace(/\/$/, '');
+const LIVE_API = `${LIVE_API_BASE}/api/steam-deals`;
+const LIVE_PAGE_SIZE = 60;
 
 let ALL_GAMES = [];
 let dataSource = 'fallback';
 let fetchedAt = null;
 let autoTimer = null;
+let liveStart = 0;
+let liveTotal = 0;
+let liveLoading = false;
+let liveAvailable = location.protocol !== 'file:';
 
 async function tryFetch(url) {
   for (const proxy of PROXIES) {
@@ -173,12 +180,73 @@ async function fetchCheapShark() {
   return games;
 }
 
+async function fetchLiveSteamPage(start = 0) {
+  if (!liveAvailable) return null;
+  try {
+    const res = await fetch(`${LIVE_API}?start=${start}&count=${LIVE_PAGE_SIZE}`, {
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!res.ok) throw new Error(`Live API ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data.games)) return null;
+    liveTotal = data.total || data.games.length;
+    return data;
+  } catch {
+    liveAvailable = false;
+    return null;
+  }
+}
+
+function mergeGames(incoming, replace = false) {
+  const fbMap = new Map(FALLBACK.map(g => [g.appid, g]));
+  const base = replace ? [] : ALL_GAMES;
+  const byId = new Map(base.map(g => [g.appid, g]));
+
+  for (const game of incoming) {
+    const fb = fbMap.get(game.appid);
+    byId.set(game.appid, fb
+      ? { ...fb, orig: game.orig, sale: game.sale, disc: game.disc, rating: game.rating || fb.rating, img: game.img, _live: true }
+      : game);
+  }
+
+  ALL_GAMES = [...byId.values()];
+}
+
+async function loadMoreLive() {
+  if (!liveAvailable || liveLoading || liveStart >= liveTotal) return false;
+  liveLoading = true;
+  document.getElementById('lmi').style.display = 'block';
+  document.getElementById('lmi').textContent = 'กำลังดึงเพิ่มจาก Steam...';
+
+  const data = await fetchLiveSteamPage(liveStart);
+  liveLoading = false;
+
+  if (!data || !data.games.length) {
+    document.getElementById('lmi').textContent = 'โหลดข้อมูลสดเพิ่มไม่ได้';
+    return false;
+  }
+
+  liveStart += data.games.length;
+  mergeGames(data.games);
+  fetchedAt = new Date(data.fetchedAt || Date.now());
+  dataSource = 'live';
+  setStatus('success', `เชื่อม Steam สด — แสดง ${Math.min(liveStart, liveTotal)} / ${liveTotal} รายการ`);
+  S.filtered = buildFilteredList();
+  S.allLoaded = false;
+  loadMore();
+  updateStats();
+  return true;
+}
+
 async function fetchSteam(force = false) {
   if (!force) {
     try {
       const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
       if (cached && Date.now() - cached.ts < CACHE_TTL) {
         ALL_GAMES = cached.games;
+        liveStart = cached.liveStart || ALL_GAMES.filter(g => g._live).length || 0;
+        liveTotal = cached.liveTotal || liveStart;
+        liveAvailable = location.protocol !== 'file:';
         fetchedAt = new Date(cached.ts);
         dataSource = 'cache';
         setStatus('cache', `แคชข้อมูล — อัปเดตเมื่อ ${timeAgo(fetchedAt)}`);
@@ -193,6 +261,28 @@ async function fetchSteam(force = false) {
   setStatus('loading', 'กำลังเชื่อมต่อ Steam...');
   spinRefresh(true);
   showSkeletons();
+
+  liveAvailable = location.protocol !== 'file:';
+  liveStart = 0;
+  liveTotal = 0;
+
+  const livePage = await fetchLiveSteamPage(0);
+  if (livePage && livePage.games.length) {
+    mergeGames(livePage.games, true);
+    liveStart = livePage.games.length;
+    fetchedAt = new Date(livePage.fetchedAt || Date.now());
+    dataSource = 'live';
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ games: ALL_GAMES, ts: fetchedAt.getTime(), liveStart, liveTotal }));
+    setStatus('success', `เชื่อม Steam สด — แสดง ${liveStart} / ${liveTotal || liveStart} รายการ`);
+    document.getElementById('liveDot').style.display = 'block';
+    document.getElementById('liveLabel').style.display = 'block';
+    spinRefresh(false);
+    render();
+    updateStats();
+    startAutoUpdate();
+    showToast(`โหลดจาก Steam สด ${liveStart} เกม`);
+    return;
+  }
 
   const fbMap = new Map(FALLBACK.map(g => [g.appid, g]));
 
@@ -318,7 +408,7 @@ function showSkeletons() {
 const S = {
   tab: 'sale', disc: 0, genre: '', search: '', sort: 'disc',
   wishlist: new Set(JSON.parse(localStorage.getItem('wl') || '[]')),
-  filtered: [], page: 0, perPage: 24, loading: false, allLoaded: false,
+  filtered: [], page: 0, shown: 0, perPage: 24, loading: false, allLoaded: false,
 };
 
 function updateStats() {
@@ -342,7 +432,7 @@ function getPool() {
   return ALL_GAMES.filter(g => !g.free && !g.type && g.sale > 0);
 }
 
-function render() {
+function buildFilteredList() {
   let list = getPool();
 
   if (S.tab === 'sale' || S.tab === 'dlc') {
@@ -365,8 +455,14 @@ function render() {
   else if (S.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
   else if (S.sort === 'rev') list.sort((a, b) => b.rating - a.rating);
 
+  return list;
+}
+
+function render() {
+  const list = buildFilteredList();
   S.filtered = list;
   S.page = 0;
+  S.shown = 0;
   S.allLoaded = false;
   document.getElementById('gameGrid').innerHTML = '';
   loadMore();
@@ -376,7 +472,7 @@ function render() {
 function loadMore() {
   if (S.loading || S.allLoaded) return;
   S.loading = true;
-  const start = S.page * S.perPage;
+  const start = S.shown;
   const slice = S.filtered.slice(start, start + S.perPage);
 
   if (!slice.length) {
@@ -400,10 +496,17 @@ function loadMore() {
     }
     document.getElementById('gameGrid').appendChild(frag);
     S.page++;
-    const shown = Math.min(S.page * S.perPage, S.filtered.length);
+    S.shown += slice.length;
+    const shown = Math.min(S.shown, S.filtered.length);
     document.getElementById('rcCount').textContent = `${shown} / ${S.filtered.length} รายการ`;
-    if (S.page * S.perPage >= S.filtered.length) {
+    if (S.shown >= S.filtered.length) {
       S.allLoaded = true;
+      if (S.tab === 'sale' && liveAvailable && liveStart < liveTotal && !S.search && !S.genre) {
+        S.allLoaded = false;
+        S.loading = false;
+        loadMoreLive();
+        return;
+      }
       document.getElementById('lmi').style.display = 'none';
     }
     S.loading = false;
@@ -418,7 +521,7 @@ observer.observe(document.getElementById('sentinel'));
 function cardHTML(g) {
   const inW = S.wishlist.has(g.appid);
   const steamUrl = `https://store.steampowered.com/app/${g.appid}`;
-  const imgUrl = thumb(g.appid);
+  const imgUrl = g.img || thumb(g.appid);
 
   const badge = g.disc > 0 && !g.free
     ? `<div class="dbadge">-${g.disc}%</div>` : '';
