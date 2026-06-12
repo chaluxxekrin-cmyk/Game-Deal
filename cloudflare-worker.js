@@ -1,4 +1,16 @@
 const CACHE_MS = 60 * 1000;
+const GENRE_TAGS = {
+  Action: 19,
+  Adventure: 21,
+  RPG: 122,
+  Strategy: 9,
+  Simulation: 599,
+  Horror: 1667,
+  Indie: 492,
+  Racing: 699,
+  Sports: 701,
+};
+const TAG_GENRES = Object.fromEntries(Object.entries(GENRE_TAGS).map(([name, id]) => [String(id), name]));
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -55,6 +67,11 @@ function parseRows(html) {
     const sale = /free/i.test(priceBlock) ? 0 : priceToBaht(saleText);
     const orig = originalBlock ? priceToBaht(originalBlock) : sale;
     const img = (row.match(/<img[^>]+src="([^"]+)"/) || [])[1] || '';
+    const tagIds = ((row.match(/data-ds-tagids="\[([^\]]*)\]"/) || [])[1] || '')
+      .split(',')
+      .map(x => x.trim())
+      .filter(Boolean);
+    const genres = [...new Set(tagIds.map(id => TAG_GENRES[id]).filter(Boolean))];
     const release = textBetween(row, /search_released[^>]*>([\s\S]*?)<\/div>/);
     const ratingText = textBetween(row, /search_review_summary[^>]*data-tooltip-html="([^"]+)"/);
     const rating = Number((ratingText.match(/(\d+)%/) || [])[1] || 0);
@@ -68,7 +85,7 @@ function parseRows(html) {
       orig,
       sale,
       disc,
-      genres: [],
+      genres,
       tags: [],
       coop: false,
       multi: false,
@@ -80,19 +97,31 @@ function parseRows(html) {
   }).filter(Boolean);
 }
 
-async function fetchSteamDeals(start, count, env, ctx) {
-  const cacheUrl = new URL(`https://steamdeal.local/api/steam-deals?start=${start}&count=${count}`);
+async function fetchSteamDeals(params, env, ctx) {
+  const { start, count, mode, genre, search, discount } = params;
+  const cacheUrl = new URL(`https://steamdeal.local/api/steam-deals?${new URLSearchParams(params)}`);
   const cache = caches.default;
   const hit = await cache.match(cacheUrl);
   if (hit) return hit;
 
   const api = new URL('https://store.steampowered.com/search/results/');
   api.searchParams.set('query', '');
+  if (search) api.searchParams.set('query', search);
   api.searchParams.set('start', String(start));
   api.searchParams.set('count', String(count));
   api.searchParams.set('dynamic_data', '');
   api.searchParams.set('sort_by', '_ASC');
-  api.searchParams.set('specials', '1');
+  if (mode === 'free') {
+    api.searchParams.set('maxprice', 'free');
+    api.searchParams.set('category1', '998');
+  } else if (mode === 'dlc') {
+    api.searchParams.set('specials', '1');
+    api.searchParams.set('category1', '21');
+  } else {
+    api.searchParams.set('specials', '1');
+    api.searchParams.set('category1', '998');
+  }
+  if (GENRE_TAGS[genre]) api.searchParams.set('tags', String(GENRE_TAGS[genre]));
   api.searchParams.set('cc', 'th');
   api.searchParams.set('l', 'english');
   api.searchParams.set('infinite', '1');
@@ -109,11 +138,19 @@ async function fetchSteamDeals(start, count, env, ctx) {
   }
 
   const data = await response.json();
+  const rawCount = (data.results_html || '').match(/<a\b(?=[^>]*search_result_row)[\s\S]*?<\/a>/g)?.length || 0;
+  const games = parseRows(data.results_html || '')
+    .filter(game => !discount || game.disc >= discount);
   const out = json({
     start,
     count,
+    mode,
+    genre,
+    search,
+    discount,
     total: Number(data.total_count || 0),
-    games: parseRows(data.results_html || ''),
+    rawCount,
+    games,
     fetchedAt: Date.now(),
   });
 
@@ -132,6 +169,13 @@ export default {
 
     const start = Math.max(0, Number(url.searchParams.get('start') || 0));
     const count = Math.min(100, Math.max(1, Number(url.searchParams.get('count') || 60)));
-    return fetchSteamDeals(start, count, env, ctx);
+    return fetchSteamDeals({
+      start,
+      count,
+      mode: url.searchParams.get('mode') || 'sale',
+      genre: url.searchParams.get('genre') || '',
+      search: url.searchParams.get('search') || '',
+      discount: Math.max(0, Number(url.searchParams.get('discount') || 0)),
+    }, env, ctx);
   },
 };
