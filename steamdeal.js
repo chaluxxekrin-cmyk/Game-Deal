@@ -1,4 +1,4 @@
-const FALLBACK = [
+const GAME_FALLBACK = [
   {appid:292030,name:"The Witcher 3: Wild Hunt",dev:"CD PROJEKT RED",orig:799,sale:79,disc:90,genres:["RPG","Adventure"],tags:["Open World","Story Rich","Fantasy"],coop:false,multi:false,rating:97},
   {appid:1091500,name:"Cyberpunk 2077",dev:"CD PROJEKT RED",orig:1099,sale:329,disc:70,genres:["Action","RPG"],tags:["Open World","Cyberpunk","Story Rich"],coop:false,multi:true,rating:78},
   {appid:1174180,name:"Red Dead Redemption 2",dev:"Rockstar Games",orig:1499,sale:599,disc:60,genres:["Action","Adventure"],tags:["Open World","Story Rich","Western"],coop:false,multi:true,rating:93},
@@ -18,7 +18,7 @@ const FALLBACK = [
   {appid:400,name:"Portal",dev:"Valve",orig:99,sale:14,disc:85,genres:["Action","Adventure"],tags:["Puzzle","Sci-fi","Short"],coop:false,multi:false,rating:98},
   {appid:367520,name:"Hollow Knight",dev:"Team Cherry",orig:149,sale:52,disc:65,genres:["Action","Adventure","Indie"],tags:["Metroidvania","Difficult","Atmospheric"],coop:false,multi:false,rating:97},
   {appid:1466060,name:"It Takes Two",dev:"Hazelight Studios",orig:699,sale:209,disc:70,genres:["Action","Adventure"],tags:["Co-op","Platformer","Story Rich"],coop:true,multi:false,rating:97},
-  {appid:39150,name:"Disco Elysium",dev:"ZA/UM",orig:499,sale:99,disc:80,genres:["RPG","Adventure"],tags:["Detective","Story Rich","Indie"],coop:false,multi:false,rating:97},
+  {appid:39150,name:"Disco Elysium",dev:"ZA/UM",orig:499,sale:99,disc:80,genres:["RPG","Adventure","Indie"],tags:["Detective","Story Rich","Indie"],coop:false,multi:false,rating:97},
   {appid:1658440,name:"Persona 5 Royal",dev:"ATLUS",orig:1799,sale:629,disc:65,genres:["RPG","Adventure"],tags:["JRPG","Anime","Turn-Based"],coop:false,multi:false,rating:97},
   {appid:1569580,name:"NieR:Automata",dev:"PlatinumGames",orig:799,sale:199,disc:75,genres:["Action","RPG"],tags:["Anime","Story Rich","Hack and Slash"],coop:false,multi:false,rating:92},
   {appid:614570,name:"Sekiro: Shadows Die Twice",dev:"FromSoftware Inc.",orig:1199,sale:599,disc:50,genres:["Action","Adventure"],tags:["Souls-like","Difficult","Japan"],coop:false,multi:false,rating:93},
@@ -38,6 +38,19 @@ const FALLBACK = [
   {appid:346110,name:"ARK: Survival Evolved",dev:"Studio Wildcard",orig:549,sale:82,disc:85,genres:["Action","Adventure","Simulation"],tags:["Survival","Dinosaurs","Co-op"],coop:true,multi:true,rating:74},
   {appid:1158310,name:"Crusader Kings III",dev:"Paradox Development Studio",orig:799,sale:199,disc:75,genres:["Strategy","Simulation","RPG"],tags:["Grand Strategy","Medieval","Dynasty"],coop:false,multi:true,rating:91},
   {appid:1551360,name:"Forza Horizon 5",dev:"Playground Games",orig:1999,sale:999,disc:50,genres:["Racing","Simulation","Sports"],tags:["Driving","Open World","Multiplayer"],coop:false,multi:true,rating:90},
+  {appid:1086940,name:"Baldur's Gate 3 (Digital Deluxe)",dev:"Larian Studios",orig:1899,sale:1329,disc:30,genres:["RPG","Adventure"],tags:["Fantasy","Co-op","Turn-Based"],coop:true,multi:true,rating:97},
+  {appid:275850,name:"No Man's Sky",dev:"Hello Games",orig:899,sale:269,disc:70,genres:["Action","Adventure","Indie"],tags:["Space","Open World","Co-op"],coop:true,multi:true,rating:87},
+  {appid:945360,name:"Among Us",dev:"Innersloth",orig:99,sale:49,disc:50,genres:["Action","Indie"],tags:["Social Deduction","Multiplayer","Party"],coop:false,multi:true,rating:87},
+  {appid:1263850,name:"DEATHLOOP",dev:"Arkane Studios",orig:899,sale:179,disc:80,genres:["Action","Adventure"],tags:["FPS","Stylish","Time Loop"],coop:false,multi:false,rating:83},
+  {appid:814380,name:"Sekiro: Shadows Die Twice",dev:"FromSoftware Inc.",orig:1199,sale:599,disc:50,genres:["Action","Adventure"],tags:["Souls-like","Difficult"],coop:false,multi:false,rating:93},
+  {appid:1174390,name:"Ghostrunner",dev:"One More Level",orig:499,sale:124,disc:75,genres:["Action","Indie"],tags:["Cyberpunk","Difficult","Speedrun"],coop:false,multi:false,rating:88},
+  {appid:1659420,name:"Rogue Legacy 2",dev:"Cellar Door Games",orig:349,sale:174,disc:50,genres:["Action","Indie","RPG"],tags:["Roguelite","Platformer","Difficult"],coop:false,multi:false,rating:95},
+  {appid:1260320,name:"Spiritfarer",dev:"Thunder Lotus Games",orig:499,sale:124,disc:75,genres:["Adventure","Indie","Simulation"],tags:["Cozy","Management","Story Rich"],coop:true,multi:false,rating:95},
+  {appid:1313140,name:"Warhammer 40,000: Darktide",dev:"Fatshark",orig:699,sale:209,disc:70,genres:["Action"],tags:["Co-op","FPS","Warhammer"],coop:true,multi:true,rating:79},
+  {appid:1551360,name:"Forza Horizon 5",dev:"Playground Games",orig:1999,sale:999,disc:50,genres:["Racing","Simulation","Sports"],tags:["Driving","Open World"],coop:false,multi:true,rating:90},
+];
+
+const FREE_FALLBACK = [
   {appid:570,name:"Dota 2",dev:"Valve",orig:0,sale:0,disc:0,genres:["Strategy","Action"],tags:["MOBA","Multiplayer"],coop:false,multi:true,rating:80,free:true},
   {appid:730,name:"Counter-Strike 2",dev:"Valve",orig:0,sale:0,disc:0,genres:["Action"],tags:["FPS","Competitive"],coop:false,multi:true,rating:78,free:true},
   {appid:578080,name:"PUBG: BATTLEGROUNDS",dev:"PUBG Corporation",orig:0,sale:0,disc:0,genres:["Action"],tags:["Battle Royale","Survival"],coop:true,multi:true,rating:67,free:true},
@@ -47,12 +60,37 @@ const FALLBACK = [
   {appid:218620,name:"PAYDAY 2",dev:"Overkill Software",orig:0,sale:0,disc:0,genres:["Action"],tags:["Co-op","Heist","FPS"],coop:true,multi:true,rating:83,free:true},
   {appid:1097150,name:"Fall Guys",dev:"Mediatonic",orig:0,sale:0,disc:0,genres:["Action","Indie"],tags:["Battle Royale","Party","Cute"],coop:false,multi:true,rating:76,free:true},
   {appid:1085660,name:"Destiny 2",dev:"Bungie",orig:0,sale:0,disc:0,genres:["Action"],tags:["FPS","Co-op","Sci-fi"],coop:true,multi:true,rating:73,free:true},
+  {appid:252950,name:"Rocket League",dev:"Psyonix",orig:0,sale:0,disc:0,genres:["Sports","Indie"],tags:["Multiplayer","Competitive","Cars"],coop:false,multi:true,rating:89,free:true},
+  {appid:359550,name:"Tom Clancy's Rainbow Six Siege",dev:"Ubisoft",orig:0,sale:0,disc:0,genres:["Action"],tags:["FPS","Tactical","Multiplayer"],coop:true,multi:true,rating:79,free:true},
+  {appid:1252370,name:"Genshin Impact",dev:"miHoYo",orig:0,sale:0,disc:0,genres:["Action","RPG"],tags:["Gacha","Open World","Anime"],coop:true,multi:true,rating:79,free:true},
 ];
+
+const DLC_FALLBACK = [
+  {appid:1252330,name:"Cyberpunk 2077: Phantom Liberty",dev:"CD PROJEKT RED",orig:599,sale:299,disc:50,genres:["Action","RPG"],tags:["DLC","Expansion","Story Rich"],coop:false,multi:false,rating:90,type:'dlc'},
+  {appid:2778580,name:"Elden Ring: Shadow of the Erdtree",dev:"FromSoftware Inc.",orig:699,sale:629,disc:10,genres:["Action","RPG"],tags:["DLC","Expansion","Souls-like"],coop:true,multi:true,rating:94,type:'dlc'},
+  {appid:485141,name:"The Witcher 3: Hearts of Stone",dev:"CD PROJEKT RED",orig:199,sale:29,disc:85,genres:["RPG","Adventure"],tags:["DLC","Story Rich","Fantasy"],coop:false,multi:false,rating:92,type:'dlc'},
+  {appid:532034,name:"The Witcher 3: Blood and Wine",dev:"CD PROJEKT RED",orig:299,sale:44,disc:85,genres:["RPG","Adventure"],tags:["DLC","Story Rich","Fantasy"],coop:false,multi:false,rating:96,type:'dlc'},
+  {appid:1093901,name:"Monster Hunter World: Iceborne",dev:"CAPCOM",orig:999,sale:299,disc:70,genres:["Action","RPG"],tags:["DLC","Expansion","Hunting"],coop:true,multi:true,rating:91,type:'dlc'},
+  {appid:1866890,name:"Risk of Rain 2: Survivors of the Void",dev:"Hopoo Games",orig:199,sale:99,disc:50,genres:["Action","Indie"],tags:["DLC","Expansion","Roguelike"],coop:true,multi:true,rating:88,type:'dlc'},
+  {appid:2561760,name:"Persona 5 Royal: Persona Pack",dev:"ATLUS",orig:299,sale:149,disc:50,genres:["RPG"],tags:["DLC","JRPG","Anime"],coop:false,multi:false,rating:88,type:'dlc'},
+  {appid:1627161,name:"Hades: Forgotten Instruments Pack",dev:"Supergiant Games",orig:149,sale:74,disc:50,genres:["Action","Indie"],tags:["DLC","Soundtrack"],coop:false,multi:false,rating:95,type:'dlc'},
+  {appid:1928050,name:"Monster Hunter Rise: Sunbreak",dev:"CAPCOM",orig:899,sale:224,disc:75,genres:["Action","RPG"],tags:["DLC","Expansion","Hunting"],coop:true,multi:true,rating:89,type:'dlc'},
+  {appid:1341820,name:"Deep Rock Galactic: Season Pass",dev:"Ghost Ship Games",orig:299,sale:149,disc:50,genres:["Action"],tags:["DLC","Co-op","FPS"],coop:true,multi:true,rating:90,type:'dlc'},
+  {appid:1091543,name:"Satisfactory: Soundtrack",dev:"Coffee Stain Studios",orig:149,sale:74,disc:50,genres:["Simulation"],tags:["DLC","Soundtrack"],coop:false,multi:false,rating:90,type:'dlc'},
+  {appid:1113562,name:"Hades: Original Soundtrack",dev:"Supergiant Games",orig:149,sale:74,disc:50,genres:["Indie"],tags:["DLC","Soundtrack"],coop:false,multi:false,rating:99,type:'dlc'},
+  {appid:228422,name:"Borderlands 2: Mr. Torgue's Campaign",dev:"Gearbox Software",orig:99,sale:24,disc:75,genres:["Action"],tags:["DLC","Shooter","Co-op"],coop:true,multi:true,rating:90,type:'dlc'},
+  {appid:1584840,name:"Crusader Kings III: Royal Court",dev:"Paradox Development Studio",orig:499,sale:249,disc:50,genres:["Strategy","Simulation"],tags:["DLC","Expansion","Grand Strategy"],coop:false,multi:true,rating:78,type:'dlc'},
+  {appid:1800246,name:"Civilization VI: New Frontier Pass",dev:"Firaxis Games",orig:599,sale:149,disc:75,genres:["Strategy"],tags:["DLC","Expansion","Turn-Based"],coop:false,multi:true,rating:80,type:'dlc'},
+];
+
+const FALLBACK = [...GAME_FALLBACK, ...FREE_FALLBACK, ...DLC_FALLBACK];
 
 const STEAM_URLS = [
   'https://store.steampowered.com/api/featuredcategories/?cc=th&l=english',
   'https://store.steampowered.com/api/featured/?cc=th&l=english',
 ];
+
+const CHEAPSHARK_URL = 'https://www.cheapshark.com/api/1.0/deals?storeID=1&pageSize=100&sortBy=DealRating&desc=1&upperPrice=100';
 
 const PROXIES = [
   u => u,
@@ -61,8 +99,9 @@ const PROXIES = [
   u => `https://thingproxy.freeboard.io/fetch/${u}`,
 ];
 
-const CACHE_KEY = 'steamdeal_v3';
+const CACHE_KEY = 'steamdeal_v4';
 const CACHE_TTL = 15 * 60 * 1000;
+const THB_RATE = 33;
 
 let ALL_GAMES = [];
 let dataSource = 'fallback';
@@ -85,7 +124,7 @@ async function tryFetch(url) {
   return null;
 }
 
-function parseItems(items = []) {
+function parseSteamItems(items = []) {
   const seen = new Set();
   const games = [];
   for (const item of items) {
@@ -96,16 +135,40 @@ function parseItems(items = []) {
     const disc = item.discount_percent || 0;
     const isFree = (sale === 0 && orig === 0 && disc === 0) || item.is_free_game === true;
     if (!isFree && sale === 0) continue;
-    games.push({
-      appid: item.id,
-      name: item.name || '',
-      dev: item.publisher || '',
-      orig, sale, disc,
-      genres: [], tags: [],
-      coop: false, multi: false, rating: 0,
-      free: isFree,
-      _live: true,
-    });
+    games.push({ appid: item.id, name: item.name || '', dev: item.publisher || '', orig, sale, disc, genres: [], tags: [], coop: false, multi: false, rating: 0, free: isFree, _live: true });
+  }
+  return games;
+}
+
+async function fetchCheapShark() {
+  const data = await tryFetch(CHEAPSHARK_URL);
+  if (!Array.isArray(data)) return [];
+  const fbMap = new Map(FALLBACK.map(g => [g.appid, g]));
+  const games = [];
+  const seen = new Set();
+  for (const item of data) {
+    const appid = parseInt(item.steamAppID);
+    if (!appid || isNaN(appid) || seen.has(appid)) continue;
+    seen.add(appid);
+    const disc = Math.round(parseFloat(item.savings));
+    const saleUSD = parseFloat(item.salePrice);
+    const origUSD = parseFloat(item.normalPrice);
+    if (saleUSD <= 0 && disc <= 0) continue;
+    const fb = fbMap.get(appid);
+    if (fb) {
+      games.push({ ...fb, disc: disc || fb.disc, _cs: true });
+    } else {
+      games.push({
+        appid, name: item.title, dev: '',
+        orig: Math.round(origUSD * THB_RATE),
+        sale: Math.round(saleUSD * THB_RATE),
+        disc, genres: [], tags: [],
+        coop: false, multi: false,
+        rating: parseInt(item.steamRatingPercent) || 0,
+        free: saleUSD === 0 && origUSD === 0,
+        _cs: true,
+      });
+    }
   }
   return games;
 }
@@ -118,7 +181,7 @@ async function fetchSteam(force = false) {
         ALL_GAMES = cached.games;
         fetchedAt = new Date(cached.ts);
         dataSource = 'cache';
-        setStatus('cache', `ข้อมูลแคช — อัปเดตเมื่อ ${timeAgo(fetchedAt)}`);
+        setStatus('cache', `แคชข้อมูล — อัปเดตเมื่อ ${timeAgo(fetchedAt)}`);
         render();
         updateStats();
         startAutoUpdate();
@@ -131,47 +194,66 @@ async function fetchSteam(force = false) {
   spinRefresh(true);
   showSkeletons();
 
-  let liveGames = [];
-
-  for (const url of STEAM_URLS) {
-    const data = await tryFetch(url);
-    if (!data) continue;
-
-    const specials = data.specials?.items || [];
-    const topSellers = data.top_sellers?.items || [];
-    const newReleases = data.new_releases?.items || [];
-    const featuredWin = data.featured_win || [];
-
-    const all = [...specials, ...topSellers, ...newReleases, ...featuredWin];
-    liveGames = parseItems(all);
-    if (liveGames.length > 0) break;
-  }
-
   const fbMap = new Map(FALLBACK.map(g => [g.appid, g]));
 
-  if (liveGames.length > 0) {
-    ALL_GAMES = liveGames.map(g => {
-      const fb = fbMap.get(g.appid);
-      return fb ? { ...fb, orig: g.orig, sale: g.sale, disc: g.disc, _live: true } : g;
-    });
+  const [steamData, csGames] = await Promise.allSettled([
+    (async () => {
+      for (const url of STEAM_URLS) {
+        const data = await tryFetch(url);
+        if (!data) continue;
+        const items = [
+          ...(data.specials?.items || []),
+          ...(data.top_sellers?.items || []),
+          ...(data.new_releases?.items || []),
+          ...(data.featured_win || []),
+        ];
+        const games = parseSteamItems(items);
+        if (games.length > 0) return games;
+      }
+      return [];
+    })(),
+    fetchCheapShark(),
+  ]);
 
-    const liveIds = new Set(ALL_GAMES.map(g => g.appid));
-    for (const g of FALLBACK) {
-      if (g.free && !liveIds.has(g.appid)) ALL_GAMES.push(g);
-    }
+  const steamGames = steamData.status === 'fulfilled' ? steamData.value : [];
+  const cheapSharkGames = csGames.status === 'fulfilled' ? csGames.value : [];
 
-    fetchedAt = new Date();
-    dataSource = 'live';
+  const seen = new Set();
+  const merged = [];
+
+  const addGame = (g) => {
+    if (seen.has(g.appid)) return;
+    seen.add(g.appid);
+    merged.push(g);
+  };
+
+  for (const g of steamGames) {
+    const fb = fbMap.get(g.appid);
+    addGame(fb ? { ...fb, orig: g.orig, sale: g.sale, disc: g.disc, _live: true } : g);
+  }
+
+  for (const g of cheapSharkGames) {
+    addGame(g);
+  }
+
+  for (const g of FALLBACK) {
+    if (!seen.has(g.appid)) addGame(g);
+  }
+
+  ALL_GAMES = merged;
+  fetchedAt = new Date();
+
+  const liveCount = steamGames.length + cheapSharkGames.length;
+  if (liveCount > 0) {
+    dataSource = steamGames.length > 0 ? 'live' : 'cache';
     sessionStorage.setItem(CACHE_KEY, JSON.stringify({ games: ALL_GAMES, ts: fetchedAt.getTime() }));
-    setStatus('success', `ดึงข้อมูลสำเร็จ — ${liveGames.length} เกม จาก Steam`);
+    setStatus('success', `ดึงข้อมูลสำเร็จ — Steam ${steamGames.length} + CheapShark ${cheapSharkGames.length} เกม`);
     document.getElementById('liveDot').style.display = 'block';
     document.getElementById('liveLabel').style.display = 'block';
-    showToast(`โหลด ${liveGames.length} เกมจาก Steam สำเร็จ`);
+    showToast(`โหลด ${liveCount} เกมสด + ${DLC_FALLBACK.length} DLC`);
   } else {
-    ALL_GAMES = [...FALLBACK];
-    fetchedAt = new Date();
     dataSource = 'fallback';
-    setStatus('error', 'ไม่สามารถเชื่อมต่อ Steam — ใช้ข้อมูลสำรอง (ลองเปิดผ่าน browser โดยตรง)');
+    setStatus('error', 'เชื่อมต่อไม่ได้ — ใช้ข้อมูลสำรอง');
     showToast('ใช้ข้อมูลสำรอง');
   }
 
@@ -202,7 +284,7 @@ function timeAgo(d) {
   if (s < 60) return `${s}s ที่แล้ว`;
   const m = Math.round(s / 60);
   if (m < 60) return `${m} นาทีที่แล้ว`;
-  return `${Math.round(m / 60)} ชั่วโมงที่แล้ว`;
+  return `${Math.round(m / 60)} ชม. ที่แล้ว`;
 }
 
 function spinRefresh(on) {
@@ -211,10 +293,10 @@ function spinRefresh(on) {
 
 function setStatus(type, msg) {
   const b = document.getElementById('statusBanner');
-  const map = { loading: 'loading', success: 'success', cache: '', error: 'error' };
-  b.className = 'status-banner ' + (map[type] || '');
+  b.className = 'status-banner ' + (type === 'success' ? 'success' : type === 'error' ? 'error' : '');
   const icons = { loading: '⏳', success: '✅', cache: '📦', error: '⚠️' };
-  b.innerHTML = `<span>${icons[type] || '•'}</span><span class="s-text">${msg}</span><span class="src-chip ${dataSource}">${{ live: 'LIVE', cache: 'CACHED', fallback: 'OFFLINE' }[dataSource] || ''}</span>`;
+  const labels = { live: 'LIVE', cache: 'CACHED', fallback: 'OFFLINE' };
+  b.innerHTML = `<span>${icons[type] || '•'}</span><span class="s-text">${msg}</span><span class="src-chip ${dataSource}">${labels[dataSource] || ''}</span>`;
   updateTimestamp();
 }
 
@@ -227,53 +309,43 @@ function esc(s) {
 }
 
 function showSkeletons() {
-  const grid = document.getElementById('gameGrid');
-  grid.innerHTML = Array(12).fill(0).map(() => `
-    <div class="gskel">
-      <div class="sk-img"></div>
-      <div class="sk-body">
-        <div class="sk-line w80"></div>
-        <div class="sk-line w45"></div>
-        <div class="sk-line w70"></div>
-      </div>
-    </div>`).join('');
+  document.getElementById('gameGrid').innerHTML = Array(12).fill(0).map(() => `
+    <div class="gskel"><div class="sk-img"></div><div class="sk-body">
+      <div class="sk-line w80"></div><div class="sk-line w45"></div><div class="sk-line w70"></div>
+    </div></div>`).join('');
 }
 
 const S = {
-  tab: 'sale',
-  disc: 0,
-  genre: '',
-  search: '',
-  sort: 'disc',
+  tab: 'sale', disc: 0, genre: '', search: '', sort: 'disc',
   wishlist: new Set(JSON.parse(localStorage.getItem('wl') || '[]')),
-  filtered: [],
-  page: 0,
-  perPage: 24,
-  loading: false,
-  allLoaded: false,
+  filtered: [], page: 0, perPage: 24, loading: false, allLoaded: false,
 };
 
 function updateStats() {
-  const paid = ALL_GAMES.filter(g => !g.free && g.sale > 0);
+  const paid = ALL_GAMES.filter(g => !g.free && !g.type && g.sale > 0);
   const free = ALL_GAMES.filter(g => g.free);
+  const dlc = ALL_GAMES.filter(g => g.type === 'dlc');
   document.getElementById('stTotal').textContent = paid.length;
   const discs = paid.map(x => x.disc).filter(x => x > 0);
   document.getElementById('stMax').textContent = (discs.length ? Math.max(...discs) : 0) + '%';
   const avg = discs.length ? Math.round(discs.reduce((a, x) => a + x, 0) / discs.length) : 0;
   document.getElementById('stAvg').textContent = avg + '%';
   document.getElementById('stFree').textContent = free.length;
+  const dlcEl = document.getElementById('stDlc');
+  if (dlcEl) dlcEl.textContent = dlc.length;
 }
 
 function getPool() {
   if (S.tab === 'free') return ALL_GAMES.filter(g => g.free);
   if (S.tab === 'wish') return ALL_GAMES.filter(g => S.wishlist.has(g.appid));
-  return ALL_GAMES.filter(g => !g.free && g.sale > 0);
+  if (S.tab === 'dlc') return ALL_GAMES.filter(g => g.type === 'dlc');
+  return ALL_GAMES.filter(g => !g.free && !g.type && g.sale > 0);
 }
 
 function render() {
   let list = getPool();
 
-  if (S.tab === 'sale') {
+  if (S.tab === 'sale' || S.tab === 'dlc') {
     if (S.disc > 0) list = list.filter(g => g.disc >= S.disc);
     if (S.genre) list = list.filter(g => g.genres.includes(S.genre));
   }
@@ -304,7 +376,6 @@ function render() {
 function loadMore() {
   if (S.loading || S.allLoaded) return;
   S.loading = true;
-
   const start = S.page * S.perPage;
   const slice = S.filtered.slice(start, start + S.perPage);
 
@@ -313,12 +384,9 @@ function loadMore() {
     document.getElementById('lmi').style.display = 'none';
     if (S.page === 0) {
       document.getElementById('gameGrid').innerHTML = `
-        <div class="empty">
-          <div class="big">🎮</div>
-          <p>ไม่พบเกมที่ตรงเงื่อนไข</p>
-        </div>`;
+        <div class="empty"><div class="big">🎮</div><p>ไม่พบเกมที่ตรงเงื่อนไข</p></div>`;
     }
-    document.getElementById('rcCount').textContent = `${S.filtered.length} เกม`;
+    document.getElementById('rcCount').textContent = `${S.filtered.length} รายการ`;
     S.loading = false;
     return;
   }
@@ -332,10 +400,8 @@ function loadMore() {
     }
     document.getElementById('gameGrid').appendChild(frag);
     S.page++;
-
     const shown = Math.min(S.page * S.perPage, S.filtered.length);
-    document.getElementById('rcCount').textContent = `${shown} / ${S.filtered.length} เกม`;
-
+    document.getElementById('rcCount').textContent = `${shown} / ${S.filtered.length} รายการ`;
     if (S.page * S.perPage >= S.filtered.length) {
       S.allLoaded = true;
       document.getElementById('lmi').style.display = 'none';
@@ -346,66 +412,72 @@ function loadMore() {
 
 const observer = new IntersectionObserver(entries => {
   if (entries[0].isIntersecting) loadMore();
-}, { rootMargin: '300px' });
+}, { rootMargin: '400px' });
 observer.observe(document.getElementById('sentinel'));
 
 function cardHTML(g) {
   const inW = S.wishlist.has(g.appid);
-  const badge = g.disc > 0 && !g.free ? `<div class="dbadge">-${g.disc}%</div>` : '';
+  const steamUrl = `https://store.steampowered.com/app/${g.appid}`;
+  const imgUrl = thumb(g.appid);
+
+  const badge = g.disc > 0 && !g.free
+    ? `<div class="dbadge">-${g.disc}%</div>` : '';
+  const dlcBadge = g.type === 'dlc'
+    ? `<div class="dbadge" style="background:#8b5cf6">DLC</div>` : '';
   const tags = g.tags.slice(0, 2).map(t => `<span class="gtag2">${esc(t)}</span>`).join('');
+
   const priceHtml = g.free
     ? `<span class="pfree">ฟรี</span>`
-    : `<span class="pnew">฿${g.sale}</span>`;
-  const origHtml = g.disc > 0 && !g.free ? `<span class="porig">฿${g.orig}</span>` : '';
-  const liveChip = g._live
-    ? `<span style="font-size:8px;background:rgba(74,222,128,.15);color:#4ade80;padding:1px 4px;border-radius:3px;font-family:'IBM Plex Mono',monospace;margin-left:3px">LIVE</span>`
-    : '';
-  return `<div class="gc" data-appid="${g.appid}" onclick="openModal(${g.appid})">
+    : `<span class="pnew">฿${g.sale.toLocaleString()}</span>`;
+  const origHtml = g.disc > 0 && !g.free
+    ? `<span class="porig">฿${g.orig.toLocaleString()}</span>` : '';
+
+  const sourceChip = g._live
+    ? `<span class="card-chip live">LIVE</span>`
+    : g._cs
+      ? `<span class="card-chip cs">~THB</span>`
+      : '';
+
+  return `<a class="gc" href="${steamUrl}" target="_blank" rel="noopener">
     <div class="gthumb">
-      <img src="${thumb(g.appid)}" loading="lazy" onerror="this.style.display='none'" alt="">
-      ${badge}
-      <button class="wbtn${inW ? ' on' : ''}" data-id="${g.appid}" onclick="toggleWish(event,${g.appid})" aria-label="Wishlist">${inW ? '❤️' : '🤍'}</button>
+      <img src="${imgUrl}" loading="lazy" alt="${esc(g.name)}"
+        onerror="this.onerror=null;this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appid}/header.jpg';this.onerror=function(){this.style.display='none'}">
+      ${badge}${dlcBadge}
+      <button class="wbtn${inW ? ' on' : ''}" data-id="${g.appid}"
+        onclick="event.preventDefault();event.stopPropagation();toggleWish(event,${g.appid})"
+        aria-label="Wishlist">${inW ? '❤️' : '🤍'}</button>
     </div>
     <div class="gi">
-      <div class="gname">${esc(g.name)}${liveChip}</div>
-      <div class="gdev">${esc(g.dev)}</div>
+      <div class="gname">${esc(g.name)} ${sourceChip}</div>
+      <div class="gdev">${esc(g.dev) || '&nbsp;'}</div>
       <div class="gtags2">${tags}</div>
       <div class="grow">
         <div>${origHtml} ${priceHtml}</div>
-        <a href="https://store.steampowered.com/app/${g.appid}" target="_blank" class="sbtn" onclick="event.stopPropagation()">Steam ↗</a>
+        ${g.rating > 0 ? `<span class="grating">⭐ ${g.rating}%</span>` : ''}
       </div>
     </div>
-  </div>`;
+  </a>`;
 }
 
 function switchTab(tab) {
   S.tab = tab;
-
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-
-  const titles = { sale: '⚡ เกมลดราคาตอนนี้', free: '🆓 เกมฟรีเล่นได้เลย', wish: '❤️ Wishlist ของคุณ' };
-  document.getElementById('secTitle').textContent = titles[tab];
-
-  const showSidebar = tab === 'sale';
+  const titles = { sale: '⚡ เกมลดราคาตอนนี้', free: '🆓 เกมฟรีเล่นได้เลย', wish: '❤️ Wishlist ของคุณ', dlc: '🎁 DLC ลดราคา' };
+  document.getElementById('secTitle').textContent = titles[tab] || '';
+  const showSidebar = tab === 'sale' || tab === 'dlc';
   const sidebar = document.getElementById('sidebar');
   const layout = document.querySelector('.layout');
   const filterBtn = document.getElementById('filterBtn');
-
-  if (window.innerWidth > 768) {
-    sidebar.style.display = showSidebar ? '' : 'none';
-  }
+  if (window.innerWidth > 768) sidebar.style.display = showSidebar ? '' : 'none';
   layout.classList.toggle('full', !showSidebar);
   if (filterBtn) filterBtn.style.display = showSidebar ? '' : 'none';
-
   closeSidebarMobile();
   render();
 }
 
 function toggleSidebarMobile() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebarOverlay');
-  sidebar.classList.toggle('open');
-  overlay.classList.toggle('show');
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
 }
 
 function closeSidebarMobile() {
@@ -417,8 +489,8 @@ function updateSidebarBudget() {
   const b = parseFloat(document.getElementById('sbBudget').value);
   const el = document.getElementById('sbRes');
   if (!b || b <= 0) { el.textContent = ''; return; }
-  const cnt = S.filtered.filter(g => g.sale <= b).length;
-  el.textContent = `ซื้อได้ ${cnt} เกมในงบนี้`;
+  const cnt = S.filtered.filter(g => g.sale > 0 && g.sale <= b).length;
+  el.textContent = `ซื้อได้ ${cnt} รายการในงบนี้`;
 }
 
 function calcBudget() {
@@ -427,7 +499,7 @@ function calcBudget() {
   const pool = ALL_GAMES.filter(g => !g.free && g.sale > 0 && g.sale <= b).sort((a, c) => c.disc - a.disc);
   const out = document.getElementById('budgetOut');
   if (!pool.length) {
-    out.innerHTML = `<div class="bsum">ไม่พบเกมในงบ ฿${b}</div>`;
+    out.innerHTML = `<div class="bsum">ไม่พบรายการในงบ ฿${b.toLocaleString()}</div>`;
     out.classList.add('show');
     return;
   }
@@ -438,9 +510,13 @@ function calcBudget() {
     if (bundle.length >= 5) break;
   }
   const total = bundle.reduce((s, g) => s + g.sale, 0);
-  out.innerHTML = `<div class="bsum">งบ <strong>฿${b}</strong> ซื้อได้ <strong>${pool.length}</strong> เกม · แนะนำชุดนี้:</div>
-    <div class="blist">${bundle.map(g => `<div class="bi"><img src="${thumb(g.appid)}" onerror="this.style.display='none'" alt=""><span class="bin">${esc(g.name)}</span><span class="bip">฿${g.sale}</span></div>`).join('')}</div>
-    <div class="btot">รวม <strong>฿${total}</strong> · เหลือ ฿${(b - total).toFixed(0)}</div>`;
+  out.innerHTML = `<div class="bsum">งบ <strong>฿${b.toLocaleString()}</strong> ซื้อได้ <strong>${pool.length}</strong> รายการ · แนะนำชุดนี้:</div>
+    <div class="blist">${bundle.map(g => `<div class="bi">
+      <img src="${thumb(g.appid)}" onerror="this.style.display='none'" alt="">
+      <span class="bin">${esc(g.name)}</span>
+      <span class="bip">฿${g.sale.toLocaleString()}</span>
+    </div>`).join('')}</div>
+    <div class="btot">รวม <strong>฿${total.toLocaleString()}</strong> · เหลือ ฿${(b - total).toFixed(0)}</div>`;
   out.classList.add('show');
 }
 
@@ -454,7 +530,6 @@ function toggleWish(e, id) {
     showToast('เพิ่มใน Wishlist');
   }
   localStorage.setItem('wl', JSON.stringify([...S.wishlist]));
-
   if (S.tab === 'wish') {
     render();
   } else {
@@ -466,49 +541,6 @@ function toggleWish(e, id) {
   }
 }
 
-function openModal(id) {
-  const g = ALL_GAMES.find(x => x.appid === id);
-  if (!g) return;
-  const inW = S.wishlist.has(id);
-  const feats = [];
-  if (g.coop) feats.push('👥 Co-op');
-  if (g.multi) feats.push('🌐 Multiplayer');
-  if (!g.multi && !g.coop) feats.push('🎮 Singleplayer');
-  if (g.rating > 0) feats.push(`⭐ ${g.rating}%`);
-  if (g._live) feats.push('🟢 ข้อมูลสด');
-
-  document.getElementById('modalContent').innerHTML = `
-    <img class="mimg" src="${thumb(g.appid)}" onerror="this.style.display='none'" alt="${esc(g.name)}">
-    <div class="mbody">
-      <div class="mtitle">${esc(g.name)}</div>
-      <div class="mdev">โดย ${esc(g.dev)}</div>
-      <div class="mtags">${[...g.genres, ...g.tags].map(t => `<span class="mtag">${esc(t)}</span>`).join('')}</div>
-      <div class="mprow">
-        ${g.disc > 0 && !g.free ? `<span class="mporig">฿${g.orig}</span>` : ''}
-        ${g.free ? `<span class="pfree" style="font-size:22px">ฟรี!</span>` : `<span class="mpnew">฿${g.sale}</span>`}
-        ${g.disc > 0 ? `<span class="mdisc">-${g.disc}%</span>` : ''}
-      </div>
-      <div class="mfeats">${feats.map(f => `<div class="fp">${f}</div>`).join('')}</div>
-      <div class="macts">
-        <a href="https://store.steampowered.com/app/${g.appid}" target="_blank" class="sbtn" style="font-size:12px;padding:8px 18px">เปิดใน Steam ↗</a>
-        <button class="sbtn" id="modalWishBtn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:12px;padding:8px 18px" onclick="toggleWish(event,${g.appid});updateModalWish(${g.appid})">${inW ? '❤️ ใน Wishlist' : '🤍 เพิ่ม Wishlist'}</button>
-      </div>
-    </div>`;
-  document.getElementById('moverlay').classList.add('show');
-  document.body.style.overflow = 'hidden';
-}
-
-function updateModalWish(id) {
-  const btn = document.getElementById('modalWishBtn');
-  if (!btn) return;
-  btn.textContent = S.wishlist.has(id) ? '❤️ ใน Wishlist' : '🤍 เพิ่ม Wishlist';
-}
-
-function closeModal() {
-  document.getElementById('moverlay').classList.remove('show');
-  document.body.style.overflow = '';
-}
-
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -517,13 +549,8 @@ function showToast(msg) {
   t._t = setTimeout(() => t.classList.remove('show'), 2400);
 }
 
-document.getElementById('moverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('moverlay')) closeModal();
-});
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
-});
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebarMobile);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebarMobile(); });
 
 document.querySelectorAll('.tb').forEach(b => {
   b.addEventListener('click', () => {
@@ -533,7 +560,6 @@ document.querySelectorAll('.tb').forEach(b => {
     localStorage.setItem('th', b.dataset.t);
   });
 });
-
 const savedTh = localStorage.getItem('th');
 if (savedTh) {
   document.documentElement.setAttribute('data-theme', savedTh);
@@ -570,7 +596,5 @@ document.getElementById('sortSel').addEventListener('change', e => {
 });
 
 document.getElementById('sbBudget').addEventListener('input', updateSidebarBudget);
-
-document.getElementById('sidebarOverlay').addEventListener('click', closeSidebarMobile);
 
 fetchSteam();
