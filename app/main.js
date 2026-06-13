@@ -1,4 +1,4 @@
-const BUILD = 'v17-2026-06-14';
+const BUILD = 'v18-2026-06-14';
 console.log('GameDeal ' + BUILD);
 
 const ICONS = {
@@ -203,6 +203,14 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function curSym() {
+  return (adapter && adapter.currency) || '฿';
+}
+function money(v, cur) {
+  const c = cur || curSym();
+  return c === '$' ? '$' + Number(v).toFixed(2) : '฿' + Math.round(v).toLocaleString();
+}
+
 function showSkeletons() {
   document.getElementById('gameGrid').innerHTML = Array(12).fill(0).map(() => `
     <div class="gskel"><div class="sk-img"></div><div class="sk-body">
@@ -341,8 +349,8 @@ function cardHTML(g) {
 
   const priceHtml = g.free
     ? `<span class="pfree">ฟรี</span>`
-    : `<span class="pnew">฿${g.sale.toLocaleString()}</span>`;
-  const origHtml = g.disc > 0 && !g.free ? `<span class="porig">฿${g.orig.toLocaleString()}</span>` : '';
+    : `<span class="pnew">${money(g.sale, g.cur)}</span>`;
+  const origHtml = g.disc > 0 && !g.free ? `<span class="porig">${money(g.orig, g.cur)}</span>` : '';
 
   return `<a class="gc" href="${link}" target="_blank" rel="noopener">
     <div class="gthumb">
@@ -404,6 +412,8 @@ function applySourceUI() {
   });
   const genreSection = document.getElementById('genreSection');
   if (genreSection) genreSection.style.display = (adapter && adapter.genre) ? '' : 'none';
+  const bcur = document.querySelector('.bwrap span');
+  if (bcur) bcur.textContent = curSym();
   document.querySelectorAll('.src-tab').forEach(b => b.classList.toggle('on', b.dataset.src === (curSource && curSource.id)));
 }
 
@@ -443,7 +453,7 @@ function calcBudget() {
   const pool = LIVE_VIEW.filter(g => !g.free && g.sale > 0 && g.sale <= b).sort((a, c) => c.disc - a.disc);
   const out = document.getElementById('budgetOut');
   if (!pool.length) {
-    out.innerHTML = `<div class="bsum">ไม่พบรายการในงบ ฿${b.toLocaleString()}</div>`;
+    out.innerHTML = `<div class="bsum">ไม่พบรายการในงบ ${money(b)}</div>`;
     out.classList.add('show');
     return;
   }
@@ -454,13 +464,13 @@ function calcBudget() {
     if (bundle.length >= 5) break;
   }
   const total = bundle.reduce((s, g) => s + g.sale, 0);
-  out.innerHTML = `<div class="bsum">งบ <strong>฿${b.toLocaleString()}</strong> ซื้อได้ <strong>${pool.length}</strong> รายการ · แนะนำชุดนี้:</div>
+  out.innerHTML = `<div class="bsum">งบ <strong>${money(b)}</strong> ซื้อได้ <strong>${pool.length}</strong> รายการ · แนะนำชุดนี้:</div>
     <div class="blist">${bundle.map(g => `<div class="bi">
       <img src="${cardImage(g)}" onerror="this.style.display='none'" alt="">
       <span class="bin">${esc(g.name)}</span>
-      <span class="bip">฿${g.sale.toLocaleString()}</span>
+      <span class="bip">${money(g.sale, g.cur)}</span>
     </div>`).join('')}</div>
-    <div class="btot">รวม <strong>฿${total.toLocaleString()}</strong> · เหลือ ฿${(b - total).toFixed(0)}</div>`;
+    <div class="btot">รวม <strong>${money(total)}</strong> · เหลือ ${money(b - total)}</div>`;
   out.classList.add('show');
 }
 

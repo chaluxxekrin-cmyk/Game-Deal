@@ -1,5 +1,4 @@
 (window.GD_ADAPTERS = window.GD_ADAPTERS || {}).cheapshark = function (source) {
-  const THB_RATE = 33;
   const PAGE = 60;
   const SORT = {
     disc: ['Savings', '0'],
@@ -22,8 +21,9 @@
       appid,
       name: d.title || '',
       dev: '',
-      orig: Math.round(orig * THB_RATE),
-      sale: Math.round(sale * THB_RATE),
+      orig: Number.isFinite(orig) ? orig : 0,
+      sale: Number.isFinite(sale) ? sale : 0,
+      cur: '$',
       disc: Math.round(parseFloat(d.savings) || 0),
       free: sale === 0,
       tags: [],
@@ -36,6 +36,7 @@
   return {
     tabs: source.tabs || ['sale', 'free'],
     genre: source.genre === true,
+    currency: '$',
 
     reset(p) {
       params = p || {};

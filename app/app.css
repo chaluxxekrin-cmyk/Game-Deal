@@ -56,7 +56,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);position:
 .ggrid{display:flex;flex-wrap:wrap;gap:5px}
 .gt{padding:3px 9px;border:1px solid var(--border);border-radius:20px;background:var(--tag-bg);color:var(--text2);font-size:11px;cursor:pointer;transition:all .12s}
 .gt:hover,.gt.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
-.ssel{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;outline:none;cursor:pointer}
+.ssel{width:100%;padding:8px 32px 8px 11px;border:1px solid var(--border);border-radius:6px;background-color:var(--surface2);color:var(--text);font-size:12px;font-weight:600;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:15px;transition:border-color .15s,box-shadow .15s}
+.ssel:hover{border-color:var(--accent)}
+.ssel:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.ssel option{background:var(--surface);color:var(--text)}
 
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
 .sc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center}

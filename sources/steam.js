@@ -9,6 +9,7 @@
   return {
     tabs: source.tabs || ['sale', 'free', 'dlc'],
     genre: source.genre !== false,
+    currency: '฿',
 
     reset(p) {
       params = p || {};
@@ -36,7 +37,7 @@
       total = data.total || total || raw;
       start += raw || PAGE;
       if (!raw || start >= total) exhausted = true;
-      const games = data.games.map(g => ({ ...g, key: 'steam:' + g.appid, _source: source.id }));
+      const games = data.games.map(g => ({ ...g, key: 'steam:' + g.appid, cur: '฿', _source: source.id }));
       return { games, total, exhausted };
     },
 
