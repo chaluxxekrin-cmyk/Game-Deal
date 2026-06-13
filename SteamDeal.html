@@ -3,10 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>SteamDeal — เกมลดราคาเรียลไทม์</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="steamdeal.css">
+<!-- โหลด CSS สดทุกครั้ง (กัน GitHub Pages/เบราว์เซอร์ cache ตัวเก่า) -->
+<script>document.write('<link rel="stylesheet" href="steamdeal.css?t=' + Date.now() + '">');</script>
+<noscript><link rel="stylesheet" href="steamdeal.css"></noscript>
 </head>
 <body>
 
@@ -23,7 +28,7 @@
     </div>
     <div class="hr">
       <button class="filter-btn" id="filterBtn" onclick="toggleSidebarMobile()"><span data-icon="filter"></span> ตัวกรอง</button>
-      <button class="refresh-btn" id="refreshBtn" onclick="fetchSteam(true)"><span data-icon="refresh"></span> รีเฟรช</button>
+      <button class="refresh-btn" id="refreshBtn" onclick="hardReload()"><span data-icon="refresh"></span> รีเฟรช</button>
       <div class="tp">
         <button class="tb on" data-t="mono" title="Mono"></button>
         <button class="tb" data-t="dark" title="Dark"></button>
@@ -128,7 +133,13 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="steamdeal.config.js?v=9"></script>
-<script src="steamdeal.js?v=9"></script>
+<!-- โหลด JS สดทุกครั้ง (timestamp ต่อท้าย) — ไม่ต้อง Ctrl+Shift+R เอง -->
+<script>
+(function () {
+  var t = Date.now();
+  document.write('<script src="steamdeal.config.js?t=' + t + '"><\/script>');
+  document.write('<script src="steamdeal.js?t=' + t + '"><\/script>');
+})();
+</script>
 </body>
 </html>

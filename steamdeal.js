@@ -12,7 +12,7 @@ const PROXIES = [
   u => `https://thingproxy.freeboard.io/fetch/${u}`,
 ];
 
-const BUILD = 'v9-2026-06-13';
+const BUILD = 'v10-2026-06-13';
 console.log(`%cSteamDeal build ${BUILD}`, 'color:#4ade80;font-weight:700');
 const CACHE_KEY = 'steamdeal_v8';
 
@@ -364,6 +364,13 @@ async function fetchSteam(force = false) {
   render();
   updateStats();
   startAutoUpdate();
+}
+
+// ปุ่มรีเฟรช = รีโหลดหน้าเต็มแบบ Ctrl+Shift+R: ล้าง cache ข้อมูล แล้วโหลดหน้าใหม่
+// (script/CSS จะถูกดึงสดด้วย timestamp ใหม่จาก loader ใน index.html)
+function hardReload() {
+  try { sessionStorage.removeItem(CACHE_KEY); } catch {}
+  location.reload();
 }
 
 function startAutoUpdate() {
