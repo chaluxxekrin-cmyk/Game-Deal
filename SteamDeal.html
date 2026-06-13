@@ -6,6 +6,16 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<!-- เข้าใหม่/รีเฟรชทุกครั้ง = บังคับโหลด HTML สดจาก CDN (เหมือน Ctrl+Shift+R) แล้วเก็บ URL ให้สะอาด -->
+<script>
+(function () {
+  if (!/[?&]r=/.test(location.search)) {
+    location.replace(location.pathname + '?r=' + Date.now() + location.hash);
+  } else {
+    history.replaceState(null, '', location.pathname + location.hash);
+  }
+})();
+</script>
 <title>SteamDeal — เกมลดราคาเรียลไทม์</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
