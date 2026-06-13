@@ -83,7 +83,7 @@ function parseRows(html) {
     const ratingText = textBetween(row, /search_review_summary[^>]*data-tooltip-html="([^"]+)"/);
     const rating = Number((ratingText.match(/(\d+)%/) || [])[1] || 0);
 
-    if (!name || (!disc && sale > 0)) return null;
+    if (!name) return null;
 
     return {
       appid,
@@ -112,21 +112,21 @@ async function fetchSteamDeals(params, env, ctx) {
   if (hit) return hit;
 
   const api = new URL('https://store.steampowered.com/search/results/');
-  api.searchParams.set('query', '');
-  if (search) api.searchParams.set('query', search);
+  if (search) api.searchParams.set('term', search);
   api.searchParams.set('start', String(start));
   api.searchParams.set('count', String(count));
   api.searchParams.set('dynamic_data', '');
   api.searchParams.set('sort_by', SORT_MAP[sort] || '_ASC');
+  // ตอนค้นหา ไม่จำกัดเฉพาะเกมลดราคา เพื่อให้เจอเกมที่ค้นหาแม้ราคาเต็ม
   if (mode === 'free') {
     api.searchParams.set('specials', '1');
     api.searchParams.set('maxprice', 'free');
     api.searchParams.set('category1', '998');
   } else if (mode === 'dlc') {
-    api.searchParams.set('specials', '1');
+    if (!search) api.searchParams.set('specials', '1');
     api.searchParams.set('category1', '21');
   } else {
-    api.searchParams.set('specials', '1');
+    if (!search) api.searchParams.set('specials', '1');
     api.searchParams.set('category1', '998');
   }
   if (GENRE_TAGS[genre]) api.searchParams.set('tags', String(GENRE_TAGS[genre]));
@@ -148,9 +148,12 @@ async function fetchSteamDeals(params, env, ctx) {
   const data = await response.json();
   const rawCount = (data.results_html || '').match(/<a\b(?=[^>]*search_result_row)[\s\S]*?<\/a>/g)?.length || 0;
   const games = parseRows(data.results_html || '')
-    .filter(game => mode === 'free'
-      ? game.free
-      : !game.free && (!discount || game.disc >= discount))
+    .filter(game => {
+      if (mode === 'free') return game.free;                         // เฉพาะเกมแจกฟรีชั่วคราว
+      if (game.free) return false;                                   // ตัดเกมราคา 0 / parse พลาด ออกจาก sale/dlc
+      if (search) return !discount || game.disc >= discount;         // ค้นหา: เจอทุกเกมที่ตรง (รวมเต็มราคา)
+      return game.disc > 0 && (!discount || game.disc >= discount);  // เรียกดู: เฉพาะที่ลดราคาจริง
+    })
     .map(game => mode === 'dlc' ? { ...game, type: 'dlc' } : game);
   const out = json({
     start,
