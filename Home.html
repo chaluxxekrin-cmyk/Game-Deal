@@ -18,8 +18,8 @@
 <title>GameDeal — Now</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>document.write('<link rel="stylesheet" href="steam/deals.css?t=' + Date.now() + '">');</script>
-<noscript><link rel="stylesheet" href="steam/deals.css"></noscript>
+<script>document.write('<link rel="stylesheet" href="app/app.css?t=' + Date.now() + '">');</script>
+<noscript><link rel="stylesheet" href="app/app.css"></noscript>
 </head>
 <body>
 
@@ -70,7 +70,7 @@
       </div>
     </div>
 
-    <div class="fs">
+    <div class="fs" id="genreSection">
       <div class="ft">ประเภท</div>
       <div class="ggrid" id="genreFilter">
         <button class="gt on" data-g="">ทั้งหมด</button>
@@ -106,10 +106,7 @@
       <div class="sc"><span class="sn" id="stFree">—</span><div class="sl">เกมฟรี</div></div>
     </div>
 
-    <div class="status-banner loading" id="statusBanner">
-      <span class="s-ic" data-icon="loader" data-icon-class="spin"></span>
-      <span class="s-text">กำลังดึงข้อมูลจาก Steam...</span>
-    </div>
+    <div class="source-switch" id="sourceSwitch"></div>
 
     <div class="bp">
       <div class="bpt"><span data-icon="gamepad"></span> งบเท่านี้ซื้ออะไรได้บ้าง?</div>
@@ -143,8 +140,9 @@
 <script>
 (function () {
   var t = Date.now();
-  document.write('<script src="config.js?t=' + t + '"><\/script>');
-  document.write('<script src="steam/deals.js?t=' + t + '"><\/script>');
+  ['config.js', 'sources/steam.js', 'sources/cheapshark.js', 'app/main.js'].forEach(function (src) {
+    document.write('<script src="' + src + '?t=' + t + '"><\/script>');
+  });
 })();
 </script>
 </body>
