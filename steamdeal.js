@@ -236,7 +236,7 @@ function mergeGames(incoming, replace = false) {
   for (const game of incoming) {
     const fb = fbMap.get(game.appid);
     const merged = fb
-      ? { ...fb, orig: game.orig, sale: game.sale, disc: game.disc, rating: game.rating || fb.rating, img: game.img, genres: game.genres?.length ? game.genres : fb.genres, _live: true }
+      ? { ...fb, orig: game.orig, sale: game.sale, disc: game.disc, rating: game.rating || fb.rating, img: game.img, genres: game.genres?.length ? game.genres : fb.genres, type: game.type || fb.type, free: game.free, _live: true }
       : game;
     byId.set(game.appid, merged);
     normalized.push(merged);
@@ -553,7 +553,8 @@ function buildFilteredList() {
   let list = getPool();
 
   // โหมด live: กรอง+เรียงทำที่เซิร์ฟเวอร์แล้ว (Steam) คืนลำดับเดิมเพื่อให้ infinite scroll ต่อท้ายแบบเสถียร
-  if (isLiveMode()) return list;
+  // กันเกมฟรี (ราคา 0) หลุดมาในแท็บลดราคา/DLC แม้ worker ตัวเก่ายังไม่กรอง
+  if (isLiveMode()) return (S.tab === 'sale' || S.tab === 'dlc') ? list.filter(g => !g.free) : list;
 
   if (!isLiveMode() && (S.tab === 'sale' || S.tab === 'dlc')) {
     if (S.disc > 0) list = list.filter(g => g.disc >= S.disc);

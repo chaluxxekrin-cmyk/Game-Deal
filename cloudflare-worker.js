@@ -151,7 +151,8 @@ async function fetchSteamDeals(params, env, ctx) {
   const games = parseRows(data.results_html || '')
     .filter(game => mode === 'free'
       ? game.free
-      : !game.free && (!discount || game.disc >= discount));
+      : !game.free && (!discount || game.disc >= discount))
+    .map(game => mode === 'dlc' ? { ...game, type: 'dlc' } : game);
   const out = json({
     start,
     count,
