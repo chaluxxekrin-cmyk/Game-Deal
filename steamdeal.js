@@ -260,6 +260,7 @@ async function loadMoreLive(reset = false) {
     S.page = 0;
     S.shown = 0;
     S.allLoaded = false;
+    renderedIds = new Set();
     showSkeletons();
   }
 
@@ -268,18 +269,21 @@ async function loadMoreLive(reset = false) {
   document.getElementById('lmi').textContent = 'กำลังดึงเพิ่มจาก Steam...';
 
   let data = null;
-  let added = [];
-  for (let tries = 0; tries < 5 && !added.length && !liveExhausted; tries++) {
+  let newCount = 0;
+  // วนดึงหน้าถัดไปเรื่อยๆ จนกว่าจะได้เกม "ใหม่ที่ไม่ซ้ำ" จริง (ข้ามหน้าที่ซ้ำทั้งหน้า ไม่ให้ตัน)
+  for (let tries = 0; tries < 8 && newCount === 0 && !liveExhausted; tries++) {
     data = await fetchLiveSteamPage(liveStart, params);
     if (!data) break;
-    const rawCount = data.rawCount || data.games.length || 0;
+    const rawCount = data.rawCount || (data.games || []).length || 0;
     liveTotal = data.total || liveTotal || rawCount;
     liveStart += rawCount || LIVE_PAGE_SIZE;
     if (!rawCount || liveStart >= liveTotal) liveExhausted = true;
-    added = mergeGames(data.games || []);
-    if (added.length) {
-      const seen = new Set(LIVE_VIEW.map(g => g.appid));
-      LIVE_VIEW.push(...added.filter(g => !seen.has(g.appid)));
+    const merged = mergeGames(data.games || []);
+    const seen = new Set(LIVE_VIEW.map(g => g.appid));
+    const fresh = merged.filter(g => !seen.has(g.appid));
+    if (fresh.length) {
+      LIVE_VIEW.push(...fresh);
+      newCount += fresh.length;
     }
   }
   liveLoading = false;
@@ -304,14 +308,14 @@ async function loadMoreLive(reset = false) {
     S.allLoaded = false;
     document.getElementById('gameGrid').innerHTML = '';
   }
-  if (added.length || reset) {
+  if (newCount > 0 || reset) {
     S.allLoaded = false;
     loadMore();
   } else if (liveExhausted) {
     document.getElementById('lmi').style.display = 'none';
   }
   updateStats();
-  return Boolean(added.length);
+  return newCount > 0;
 }
 
 async function fetchSteam(force = false) {
@@ -574,12 +578,16 @@ function buildFilteredList() {
   return list;
 }
 
+// appid ที่ render ลง DOM ไปแล้ว — กันการ์ดซ้ำเด็ดขาดไม่ว่า data จะซ้ำมาจากไหน
+let renderedIds = new Set();
+
 function render() {
   const list = buildFilteredList();
   S.filtered = list;
   S.page = 0;
   S.shown = 0;
   S.allLoaded = false;
+  renderedIds = new Set();
   document.getElementById('gameGrid').innerHTML = '';
   loadMore();
   updateSidebarBudget();
@@ -611,6 +619,8 @@ function loadMore() {
   requestAnimationFrame(() => {
     const frag = document.createDocumentFragment();
     for (const g of slice) {
+      if (renderedIds.has(g.appid)) continue;
+      renderedIds.add(g.appid);
       const el = document.createElement('div');
       el.innerHTML = cardHTML(g);
       frag.appendChild(el.firstElementChild);
