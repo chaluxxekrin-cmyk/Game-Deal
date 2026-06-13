@@ -1,4 +1,4 @@
-const BUILD = 'v18-2026-06-14';
+const BUILD = 'v19-2026-06-14';
 console.log('GameDeal ' + BUILD);
 
 const ICONS = {
@@ -11,6 +11,7 @@ const ICONS = {
   heart: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',
   gamepad: '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>',
   star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+  chevron: '<path d="m6 9 6 6 6-6"/>',
 };
 function icon(name, cls = '') {
   return `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
@@ -61,6 +62,7 @@ const _wl = loadWishStore();
 
 const S = {
   tab: 'sale', disc: 0, genre: '', search: '', sort: 'disc',
+  currency: localStorage.getItem('currency') || 'usd',
   wishlist: _wl.set,
   wishMap: _wl.map,
   filtered: [], page: 0, shown: 0, perPage: 24, loading: false, allLoaded: false,
@@ -78,6 +80,7 @@ function currentParams() {
     search: S.search || '',
     discount: filterable ? S.disc : 0,
     sort: S.sort || 'disc',
+    cc: curInfo().cc,
   };
 }
 function makeLiveKey() {
@@ -119,7 +122,7 @@ async function loadMoreLive(reset = false) {
   const gen = liveGen;
 
   liveLoading = true;
-  setLmi('กำลังโหลด...');
+  setLmi(t('loading'));
 
   let newCount = 0;
   let failed = false;
@@ -143,7 +146,7 @@ async function loadMoreLive(reset = false) {
   if (failed && LIVE_VIEW.length === 0) {
     liveExhausted = true;
     document.getElementById('gameGrid').innerHTML =
-      `<div class="empty"><div class="big">${icon('gamepad')}</div><p>เชื่อมต่อไม่ได้ — ลองรีเฟรช</p></div>`;
+      `<div class="empty"><div class="big">${icon('gamepad')}</div><p>${t('cant_connect')}</p></div>`;
     hideLmi();
     return false;
   }
@@ -184,15 +187,15 @@ function startAutoUpdate() {
 
 function updateTimestamp() {
   if (!fetchedAt) return;
-  document.getElementById('updatedAt').textContent = `อัปเดต ${timeAgo(fetchedAt)}`;
+  document.getElementById('updatedAt').textContent = t('updated', { t: timeAgo(fetchedAt) });
 }
 
 function timeAgo(d) {
   const s = Math.round((Date.now() - d) / 1000);
-  if (s < 60) return `${s}s ที่แล้ว`;
+  if (s < 60) return t('ago_s', { n: s });
   const m = Math.round(s / 60);
-  if (m < 60) return `${m} นาทีที่แล้ว`;
-  return `${Math.round(m / 60)} ชม. ที่แล้ว`;
+  if (m < 60) return t('ago_m', { n: m });
+  return t('ago_h', { n: Math.round(m / 60) });
 }
 
 function spinRefresh(on) {
@@ -203,12 +206,24 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+const CURRENCIES = [
+  { code: 'usd', cc: 'us', sym: '$', label: 'USD $' },
+  { code: 'eur', cc: 'de', sym: '€', label: 'EUR €' },
+  { code: 'gbp', cc: 'gb', sym: '£', label: 'GBP £' },
+  { code: 'thb', cc: 'th', sym: '฿', label: 'THB ฿' },
+  { code: 'jpy', cc: 'jp', sym: '¥', label: 'JPY ¥' },
+];
+function curInfo() {
+  return CURRENCIES.find(c => c.code === S.currency) || CURRENCIES[0];
+}
 function curSym() {
-  return (adapter && adapter.currency) || '฿';
+  return (curSource && curSource.type === 'cheapshark') ? '$' : curInfo().sym;
 }
 function money(v, cur) {
   const c = cur || curSym();
-  return c === '$' ? '$' + Number(v).toFixed(2) : '฿' + Math.round(v).toLocaleString();
+  const n = Number(v) || 0;
+  const s = (c === '¥' || Number.isInteger(n)) ? Math.round(n).toLocaleString() : n.toFixed(2);
+  return c + s;
 }
 
 function showSkeletons() {
@@ -283,9 +298,9 @@ function loadMore() {
     hideLmi();
     if (S.page === 0) {
       document.getElementById('gameGrid').innerHTML =
-        `<div class="empty"><div class="big">${icon('gamepad')}</div><p>ไม่พบเกมที่ตรงเงื่อนไข</p></div>`;
+        `<div class="empty"><div class="big">${icon('gamepad')}</div><p>${t('empty')}</p></div>`;
     }
-    document.getElementById('rcCount').textContent = `${S.filtered.length} รายการ`;
+    document.getElementById('rcCount').textContent = `${S.filtered.length} ${t('items')}`;
     S.loading = false;
     return;
   }
@@ -303,7 +318,7 @@ function loadMore() {
     S.page++;
     S.shown += slice.length;
     const shown = Math.min(S.shown, S.filtered.length);
-    document.getElementById('rcCount').textContent = `${shown}${liveTotal ? ' / ' + Number(liveTotal).toLocaleString() : ''} รายการ`;
+    document.getElementById('rcCount').textContent = `${shown}${liveTotal ? ' / ' + Number(liveTotal).toLocaleString() : ''} ${t('items')}`;
     if (S.shown >= S.filtered.length) {
       S.allLoaded = true;
       if (isLiveMode() && !liveExhausted) {
@@ -371,17 +386,15 @@ function cardHTML(g) {
   </a>`;
 }
 
-const TAB_TITLES = {
-  sale: () => `${icon('zap')} เกมลดราคาตอนนี้`,
-  free: () => `${icon('gift')} เกมแจกฟรีตอนนี้`,
-  dlc: () => `${icon('puzzle')} DLC ลดราคา`,
-  wish: () => `${icon('heart')} Wishlist ของคุณ`,
-};
+const TAB_ICON = { sale: 'zap', free: 'gift', dlc: 'puzzle', wish: 'heart' };
+function setSecTitle() {
+  document.getElementById('secTitle').innerHTML = `${icon(TAB_ICON[S.tab] || 'zap')} ${t('title_' + S.tab)}`;
+}
 
 function switchTab(tab) {
   S.tab = tab;
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  document.getElementById('secTitle').innerHTML = (TAB_TITLES[tab] || (() => ''))();
+  setSecTitle();
   const showSidebar = (tab === 'sale' || tab === 'dlc');
   const sidebar = document.getElementById('sidebar');
   const filterBtn = document.getElementById('filterBtn');
@@ -407,13 +420,15 @@ function buildSourceSwitch() {
 function applySourceUI() {
   const allowed = adapter ? adapter.tabs : ['sale'];
   document.querySelectorAll('.tab').forEach(b => {
-    const t = b.dataset.tab;
-    b.style.display = (t === 'wish' || allowed.includes(t)) ? '' : 'none';
+    const tb = b.dataset.tab;
+    b.style.display = (tb === 'wish' || allowed.includes(tb)) ? '' : 'none';
   });
   const genreSection = document.getElementById('genreSection');
   if (genreSection) genreSection.style.display = (adapter && adapter.genre) ? '' : 'none';
   const bcur = document.querySelector('.bwrap span');
   if (bcur) bcur.textContent = curSym();
+  const curWrap = document.getElementById('currencyWrap');
+  if (curWrap) curWrap.style.display = (curSource && curSource.type === 'cheapshark') ? 'none' : '';
   document.querySelectorAll('.src-tab').forEach(b => b.classList.toggle('on', b.dataset.src === (curSource && curSource.id)));
 }
 
@@ -444,16 +459,16 @@ function updateSidebarBudget() {
   const el = document.getElementById('sbRes');
   if (!b || b <= 0) { el.textContent = ''; return; }
   const cnt = S.filtered.filter(g => g.sale > 0 && g.sale <= b).length;
-  el.textContent = `ซื้อได้ ${cnt} รายการในงบนี้`;
+  el.textContent = t('buy_count', { n: cnt });
 }
 
 function calcBudget() {
   const b = parseFloat(document.getElementById('budgetIn').value);
-  if (!b || b <= 0) { showToast('กรอกงบก่อนนะ'); return; }
+  if (!b || b <= 0) { showToast(t('enter_budget')); return; }
   const pool = LIVE_VIEW.filter(g => !g.free && g.sale > 0 && g.sale <= b).sort((a, c) => c.disc - a.disc);
   const out = document.getElementById('budgetOut');
   if (!pool.length) {
-    out.innerHTML = `<div class="bsum">ไม่พบรายการในงบ ${money(b)}</div>`;
+    out.innerHTML = `<div class="bsum">${t('budget_none', { b: money(b) })}</div>`;
     out.classList.add('show');
     return;
   }
@@ -464,13 +479,13 @@ function calcBudget() {
     if (bundle.length >= 5) break;
   }
   const total = bundle.reduce((s, g) => s + g.sale, 0);
-  out.innerHTML = `<div class="bsum">งบ <strong>${money(b)}</strong> ซื้อได้ <strong>${pool.length}</strong> รายการ · แนะนำชุดนี้:</div>
+  out.innerHTML = `<div class="bsum">${t('budget_head', { b: money(b), n: pool.length })}</div>
     <div class="blist">${bundle.map(g => `<div class="bi">
       <img src="${cardImage(g)}" onerror="this.style.display='none'" alt="">
       <span class="bin">${esc(g.name)}</span>
       <span class="bip">${money(g.sale, g.cur)}</span>
     </div>`).join('')}</div>
-    <div class="btot">รวม <strong>${money(total)}</strong> · เหลือ ${money(b - total)}</div>`;
+    <div class="btot">${t('budget_tot', { t: money(total), r: money(b - total) })}</div>`;
   out.classList.add('show');
 }
 
@@ -478,12 +493,12 @@ function toggleWish(key) {
   if (S.wishlist.has(key)) {
     S.wishlist.delete(key);
     S.wishMap.delete(key);
-    showToast('ลบออกจาก Wishlist');
+    showToast(t('wish_remove'));
   } else {
     S.wishlist.add(key);
     const g = LIVE_VIEW.find(x => x.key === key) || S.wishMap.get(key);
     if (g) S.wishMap.set(key, g);
-    showToast('เพิ่มใน Wishlist');
+    showToast(t('wish_add'));
   }
   saveWishlist();
   if (S.tab === 'wish') {
@@ -502,11 +517,11 @@ document.getElementById('gameGrid').addEventListener('click', e => {
 });
 
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 2400);
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
 function hardReload() {
@@ -572,13 +587,60 @@ document.querySelectorAll('.gt').forEach(b => {
   });
 });
 
-document.getElementById('sortSel').addEventListener('change', e => {
-  S.sort = e.target.value;
-  if (isLiveMode()) loadMoreLive(true);
-  else render();
+document.getElementById('sbBudget').addEventListener('input', updateSidebarBudget);
+
+function makeDropdown(container, options, current, onSelect) {
+  container.classList.add('dd');
+  const cur = options.find(o => o.value === current) || options[0];
+  container.innerHTML = `
+    <button class="dd-btn" type="button"><span class="dd-val">${esc(cur ? cur.label : '')}</span>${icon('chevron', 'dd-chev')}</button>
+    <div class="dd-list">${options.map(o => `<div class="dd-opt${o.value === current ? ' on' : ''}" data-v="${esc(o.value)}">${esc(o.label)}</div>`).join('')}</div>`;
+  const btn = container.querySelector('.dd-btn');
+  const valEl = container.querySelector('.dd-val');
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = container.classList.contains('open');
+    document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open'));
+    container.classList.toggle('open', !open);
+  });
+  container.querySelectorAll('.dd-opt').forEach(o => o.addEventListener('click', () => {
+    container.querySelectorAll('.dd-opt').forEach(x => x.classList.toggle('on', x === o));
+    valEl.textContent = o.textContent;
+    container.classList.remove('open');
+    onSelect(o.dataset.v);
+  }));
+}
+document.addEventListener('click', () => document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open')));
+
+function buildSortDropdown() {
+  const opts = ['disc', 'pasc', 'pdesc', 'name', 'rev'].map(v => ({ value: v, label: t('sort_' + v) }));
+  makeDropdown(document.getElementById('sortDd'), opts, S.sort, v => {
+    S.sort = v;
+    if (isLiveMode()) loadMoreLive(true); else render();
+  });
+}
+
+function buildCurrencyDropdown() {
+  const opts = CURRENCIES.map(c => ({ value: c.code, label: c.label }));
+  makeDropdown(document.getElementById('currencyWrap'), opts, S.currency, v => {
+    S.currency = v;
+    localStorage.setItem('currency', v);
+    applySourceUI();
+    if (isLiveMode()) loadMoreLive(true); else render();
+  });
+}
+
+document.querySelectorAll('.lb').forEach(b => {
+  b.addEventListener('click', () => {
+    setLang(b.dataset.l);
+    document.querySelectorAll('.lb').forEach(x => x.classList.toggle('on', x === b));
+  });
 });
 
-document.getElementById('sbBudget').addEventListener('input', updateSidebarBudget);
+window.onLangChange = () => {
+  setSecTitle();
+  buildSortDropdown();
+};
 
 function hydrateIcons(root = document) {
   root.querySelectorAll('[data-icon]').forEach(el => {
@@ -586,8 +648,12 @@ function hydrateIcons(root = document) {
     el.removeAttribute('data-icon');
   });
 }
-hydrateIcons();
 
+applyStaticLang();
+document.querySelectorAll('.lb').forEach(b => b.classList.toggle('on', b.dataset.l === getLang()));
+hydrateIcons();
+buildSortDropdown();
+buildCurrencyDropdown();
 buildSourceSwitch();
 startAutoUpdate();
 if (SOURCES.length) setSource(SOURCES[0].id);

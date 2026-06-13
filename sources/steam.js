@@ -9,7 +9,6 @@
   return {
     tabs: source.tabs || ['sale', 'free', 'dlc'],
     genre: source.genre !== false,
-    currency: '฿',
 
     reset(p) {
       params = p || {};
@@ -28,6 +27,7 @@
         search: params.search || '',
         discount: String(params.discount || 0),
         sort: params.sort || 'disc',
+        cc: params.cc || 'us',
       });
       const res = await fetch(`${API}/api/steam-deals?${qs}`, { signal: AbortSignal.timeout(12000) });
       if (!res.ok) throw new Error('steam ' + res.status);
@@ -37,7 +37,7 @@
       total = data.total || total || raw;
       start += raw || PAGE;
       if (!raw || start >= total) exhausted = true;
-      const games = data.games.map(g => ({ ...g, key: 'steam:' + g.appid, cur: '฿', _source: source.id }));
+      const games = data.games.map(g => ({ ...g, key: 'steam:' + g.appid, cur: g.cur || '$', _source: source.id }));
       return { games, total, exhausted };
     },
 

@@ -57,6 +57,7 @@ const server = http.createServer(async (req, res) => {
         search: url.searchParams.get('search') || '',
         discount: Math.max(0, Number(url.searchParams.get('discount') || 0)),
         sort: url.searchParams.get('sort') || 'disc',
+        cc: url.searchParams.get('cc') || 'us',
       });
       send(res, 200, JSON.stringify(data));
       return;

@@ -19,6 +19,10 @@ const SORT_MAP = {
   name: 'Name_ASC',
   rev: 'Reviews_DESC',
 };
+const CC_CUR = { us: '$', gb: '£', de: '€', jp: '¥', th: '฿' };
+function ccOf(cc) {
+  return CC_CUR[cc] ? cc : 'us';
+}
 
 function clean(value = '') {
   return value
@@ -36,10 +40,15 @@ function textBetween(html, regex) {
   return match ? clean(match[1]) : '';
 }
 
-function priceToBaht(value) {
-  const cleaned = clean(value).replace(/[^\d.,]/g, '').replace(/,/g, '');
-  const number = parseFloat(cleaned);
-  return Number.isFinite(number) ? Math.round(number) : 0;
+function parsePrice(value) {
+  const s = clean(value).replace(/[^\d.,]/g, '');
+  if (!s) return 0;
+  const dec = Math.max(s.lastIndexOf(','), s.lastIndexOf('.'));
+  let n;
+  if (dec === -1) n = parseFloat(s);
+  else if (s.length - dec - 1 === 2) n = parseFloat(s.slice(0, dec).replace(/[.,]/g, '') + '.' + s.slice(dec + 1));
+  else n = parseFloat(s.replace(/[.,]/g, ''));
+  return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
 }
 
 let TAG_MAP = null;
@@ -61,7 +70,7 @@ async function getTagMap() {
   }
 }
 
-function parseRows(html, tagMap = {}) {
+function parseRows(html, tagMap = {}, cur = '$') {
   const rows = html.match(/<a\b(?=[^>]*search_result_row)[\s\S]*?<\/a>/g) || [];
 
   return rows.map((row) => {
@@ -77,9 +86,8 @@ function parseRows(html, tagMap = {}) {
     const originalBlock = textBetween(row, /discount_original_price[^>]*>([\s\S]*?)<\/div>/);
     const finalBlock = textBetween(row, /discount_final_price[^>]*>([\s\S]*?)<\/div>/);
     const priceBlock = finalBlock || textBetween(row, /<div[^>]*class="[^"]*search_price[^"]*"[^>]*>([\s\S]*?)<\/div>/);
-    const saleText = priceBlock.split(' ').filter(Boolean).pop() || priceBlock;
-    const sale = /free/i.test(priceBlock) ? 0 : priceToBaht(saleText);
-    const orig = originalBlock ? priceToBaht(originalBlock) : sale;
+    const sale = /free/i.test(priceBlock) ? 0 : parsePrice(priceBlock);
+    const orig = originalBlock ? parsePrice(originalBlock) : sale;
     const img = (row.match(/<img[^>]+src="([^"]+)"/) || [])[1] || '';
     const tagIds = ((row.match(/data-ds-tagids="\[([^\]]*)\]"/) || [])[1] || '')
       .split(',')
@@ -96,7 +104,7 @@ function parseRows(html, tagMap = {}) {
     return {
       appid,
       name,
-      dev: release ? `ออกเมื่อ ${release}` : '',
+      dev: release || '',
       orig,
       sale,
       disc,
@@ -107,13 +115,14 @@ function parseRows(html, tagMap = {}) {
       rating,
       free: sale === 0,
       img,
+      cur,
       _live: true,
     };
   }).filter(Boolean);
 }
 
 async function fetchSteamDeals(params) {
-  const { start, count, mode, genre, search, discount, sort } = params;
+  const { start, count, mode, genre, search, discount, sort, cc } = params;
   const key = JSON.stringify(params);
   const hit = cache.get(key);
   if (hit && Date.now() - hit.ts < CACHE_MS) return hit.data;
@@ -136,7 +145,7 @@ async function fetchSteamDeals(params) {
     api.searchParams.set('category1', '998');
   }
   if (GENRE_TAGS[genre]) api.searchParams.set('tags', String(GENRE_TAGS[genre]));
-  api.searchParams.set('cc', 'th');
+  api.searchParams.set('cc', ccOf(cc));
   api.searchParams.set('l', 'english');
   api.searchParams.set('infinite', '1');
 
@@ -154,7 +163,7 @@ async function fetchSteamDeals(params) {
   const data = await response.json();
   const tagMap = await getTagMap();
   const rawCount = (data.results_html || '').match(/<a\b(?=[^>]*search_result_row)[\s\S]*?<\/a>/g)?.length || 0;
-  const games = parseRows(data.results_html || '', tagMap)
+  const games = parseRows(data.results_html || '', tagMap, CC_CUR[ccOf(cc)] || '$')
     .filter(game => {
       if (mode === 'free') return game.free;
       if (game.free) return false;

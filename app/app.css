@@ -56,20 +56,34 @@ header{background:var(--surface);border-bottom:1px solid var(--border);position:
 .ggrid{display:flex;flex-wrap:wrap;gap:5px}
 .gt{padding:3px 9px;border:1px solid var(--border);border-radius:20px;background:var(--tag-bg);color:var(--text2);font-size:11px;cursor:pointer;transition:all .12s}
 .gt:hover,.gt.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
-.ssel{width:100%;padding:8px 32px 8px 11px;border:1px solid var(--border);border-radius:6px;background-color:var(--surface2);color:var(--text);font-size:12px;font-weight:600;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:15px;transition:border-color .15s,box-shadow .15s}
-.ssel:hover{border-color:var(--accent)}
-.ssel:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
-.ssel option{background:var(--surface);color:var(--text)}
+.dd{position:relative;width:100%}
+.dd-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 11px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+.dd-btn:hover{border-color:var(--accent)}
+.dd.open .dd-btn{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+.dd-chev{width:15px;height:15px;color:var(--text3);transition:transform .2s;flex-shrink:0}
+.dd.open .dd-chev{transform:rotate(180deg)}
+.dd-list{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:60;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .16s,transform .16s,visibility .16s;max-height:280px;overflow-y:auto}
+.dd.open .dd-list{opacity:1;visibility:visible;transform:translateY(0)}
+.dd-opt{padding:8px 10px;border-radius:5px;font-size:12px;color:var(--text2);cursor:pointer;white-space:nowrap;transition:background .12s,color .12s}
+.dd-opt:hover{background:var(--hover);color:var(--text)}
+.dd-opt.on{background:var(--accent);color:var(--accent-text);font-weight:600}
 
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
 .sc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center}
 .sn{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;color:var(--accent);display:block}
 .sl{font-size:10px;color:var(--text3);margin-top:1px}
 
-.source-switch{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.switch-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.source-switch{display:flex;gap:6px;flex-wrap:wrap}
 .src-tab{padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'IBM Plex Mono',monospace}
 .src-tab:hover{border-color:var(--accent);color:var(--accent)}
 .src-tab.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.cur-wrap{margin-left:auto;padding-left:10px;border-left:1px solid var(--border);min-width:150px}
+.cur-wrap .dd-btn{font-family:'IBM Plex Mono',monospace}
+.lp{display:flex;gap:3px}
+.lb{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all .15s}
+.lb:hover{border-color:var(--accent);color:var(--accent)}
+.lb.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
 
 .bp{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px}
 .bpt{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:9px}
