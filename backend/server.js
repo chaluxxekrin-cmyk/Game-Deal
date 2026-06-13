@@ -4,7 +4,7 @@ const path = require('path');
 const { URL } = require('url');
 
 const PORT = Number(process.env.PORT || 5173);
-const ROOT = __dirname;
+const ROOT = path.join(__dirname, '..');
 const CACHE_MS = 60 * 1000;
 const cache = new Map();
 const GENRE_TAGS = {
