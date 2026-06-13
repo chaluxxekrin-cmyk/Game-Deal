@@ -71,7 +71,6 @@ function priceToBaht(value) {
 
 let TAG_MAP = null;
 let TAG_MAP_TS = 0;
-// ดึงรายชื่อ tag ทั้งหมดของ Steam ครั้งเดียว (tagid -> ชื่อ) cache ไว้ 24 ชม.
 async function getTagMap() {
   if (TAG_MAP && Date.now() - TAG_MAP_TS < 86400000) return TAG_MAP;
   try {
@@ -152,7 +151,6 @@ async function fetchSteamDeals(params) {
   api.searchParams.set('count', String(count));
   api.searchParams.set('dynamic_data', '');
   api.searchParams.set('sort_by', SORT_MAP[sort] || '_ASC');
-  // ตอนค้นหา ไม่จำกัดเฉพาะเกมลดราคา เพื่อให้เจอเกมที่ค้นหาแม้ราคาเต็ม
   if (mode === 'free') {
     api.searchParams.set('specials', '1');
     api.searchParams.set('maxprice', 'free');
@@ -185,10 +183,10 @@ async function fetchSteamDeals(params) {
   const rawCount = (data.results_html || '').match(/<a\b(?=[^>]*search_result_row)[\s\S]*?<\/a>/g)?.length || 0;
   const games = parseRows(data.results_html || '', tagMap)
     .filter(game => {
-      if (mode === 'free') return game.free;                         // เฉพาะเกมแจกฟรีชั่วคราว
-      if (game.free) return false;                                   // ตัดเกมราคา 0 / parse พลาด ออกจาก sale/dlc
-      if (search) return !discount || game.disc >= discount;         // ค้นหา: เจอทุกเกมที่ตรง (รวมเต็มราคา)
-      return game.disc > 0 && (!discount || game.disc >= discount);  // เรียกดู: เฉพาะที่ลดราคาจริง
+      if (mode === 'free') return game.free;
+      if (game.free) return false;
+      if (search) return !discount || game.disc >= discount;
+      return game.disc > 0 && (!discount || game.disc >= discount);
     })
     .map(game => mode === 'dlc' ? { ...game, type: 'dlc' } : game);
   const payload = {

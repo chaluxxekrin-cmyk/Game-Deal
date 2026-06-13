@@ -1,4 +1,3 @@
-const CACHE_MS = 60 * 1000;
 const GENRE_TAGS = {
   Action: 19,
   Adventure: 21,
@@ -55,7 +54,6 @@ function priceToBaht(value) {
 }
 
 let TAG_MAP = null;
-// ดึงรายชื่อ tag ทั้งหมดของ Steam ครั้งเดียว (tagid -> ชื่อ) แล้ว cache ไว้ยาว (tag ไม่ค่อยเปลี่ยน)
 async function getTagMap(ctx) {
   if (TAG_MAP) return TAG_MAP;
   const cacheUrl = new URL('https://steamdeal.local/tagmap');
@@ -131,7 +129,7 @@ function parseRows(html, tagMap = {}) {
   }).filter(Boolean);
 }
 
-async function fetchSteamDeals(params, env, ctx) {
+async function fetchSteamDeals(params, ctx) {
   const { start, count, mode, genre, search, discount, sort } = params;
   const cacheUrl = new URL(`https://steamdeal.local/api/steam-deals?${new URLSearchParams(params)}`);
   const cache = caches.default;
@@ -144,7 +142,6 @@ async function fetchSteamDeals(params, env, ctx) {
   api.searchParams.set('count', String(count));
   api.searchParams.set('dynamic_data', '');
   api.searchParams.set('sort_by', SORT_MAP[sort] || '_ASC');
-  // ตอนค้นหา ไม่จำกัดเฉพาะเกมลดราคา เพื่อให้เจอเกมที่ค้นหาแม้ราคาเต็ม
   if (mode === 'free') {
     api.searchParams.set('specials', '1');
     api.searchParams.set('maxprice', 'free');
@@ -177,10 +174,10 @@ async function fetchSteamDeals(params, env, ctx) {
   const rawCount = (data.results_html || '').match(/<a\b(?=[^>]*search_result_row)[\s\S]*?<\/a>/g)?.length || 0;
   const games = parseRows(data.results_html || '', tagMap)
     .filter(game => {
-      if (mode === 'free') return game.free;                         // เฉพาะเกมแจกฟรีชั่วคราว
-      if (game.free) return false;                                   // ตัดเกมราคา 0 / parse พลาด ออกจาก sale/dlc
-      if (search) return !discount || game.disc >= discount;         // ค้นหา: เจอทุกเกมที่ตรง (รวมเต็มราคา)
-      return game.disc > 0 && (!discount || game.disc >= discount);  // เรียกดู: เฉพาะที่ลดราคาจริง
+      if (mode === 'free') return game.free;
+      if (game.free) return false;
+      if (search) return !discount || game.disc >= discount;
+      return game.disc > 0 && (!discount || game.disc >= discount);
     })
     .map(game => mode === 'dlc' ? { ...game, type: 'dlc' } : game);
   const out = json({
@@ -220,6 +217,6 @@ export default {
       search: url.searchParams.get('search') || '',
       discount: Math.max(0, Number(url.searchParams.get('discount') || 0)),
       sort: url.searchParams.get('sort') || 'disc',
-    }, env, ctx);
+    }, ctx);
   },
 };

@@ -12,11 +12,10 @@ const PROXIES = [
   u => `https://thingproxy.freeboard.io/fetch/${u}`,
 ];
 
-const BUILD = 'v11-2026-06-13';
-console.log(`%cSteamDeal build ${BUILD}`, 'color:#4ade80;font-weight:700');
+const BUILD = 'v12-2026-06-13';
+console.log('SteamDeal ' + BUILD);
 const CACHE_KEY = 'steamdeal_v8';
 
-// ไอคอนจาก Lucide (https://lucide.dev/icons) ฝัง SVG ตรงๆ ใช้ currentColor ปรับสี/ขนาดตาม font ได้
 const ICONS = {
   search: '<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>',
   filter: '<path d="M10 5H3"/><path d="M12 19H3"/><path d="M14 3v4"/><path d="M16 17v4"/><path d="M21 12h-9"/><path d="M21 19h-5"/><path d="M21 5h-7"/><path d="M8 10v4"/><path d="M8 12H3"/>',
@@ -30,6 +29,7 @@ const ICONS = {
   check: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
   package: '<path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/>',
   alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
 };
 function icon(name, cls = '') {
   return `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
@@ -51,7 +51,8 @@ let liveAvailable = location.protocol !== 'file:';
 let liveKey = '';
 let liveExhausted = false;
 let LIVE_VIEW = [];
-let liveGen = 0;   // เพิ่มทุกครั้งที่ reset (ค้นหา/กรอง/เรียงใหม่) เพื่อทิ้งผลโหลดเก่าที่ค้างอยู่
+let liveGen = 0;
+let renderedIds = new Set();
 
 async function tryFetch(url) {
   for (const proxy of PROXIES) {
@@ -175,8 +176,6 @@ async function loadMoreLive(reset = false) {
   const params = currentLiveParams();
   const key = makeLiveKey(params);
   const needReset = reset || key !== liveKey;
-  // เฉพาะการโหลดหน้าถัดไป (ไม่ใช่ reset) เท่านั้นที่ถูกบล็อกตอนกำลังโหลด/หมดแล้ว
-  // ส่วน reset (ค้นหา/กรอง/เรียงใหม่) ต้องทำงานเสมอ
   if (!needReset && (liveLoading || liveExhausted)) return false;
 
   if (needReset) {
@@ -201,10 +200,9 @@ async function loadMoreLive(reset = false) {
 
   let data = null;
   let newCount = 0;
-  // วนดึงหน้าถัดไปเรื่อยๆ จนกว่าจะได้เกม "ใหม่ที่ไม่ซ้ำ" จริง (ข้ามหน้าที่ซ้ำทั้งหน้า ไม่ให้ตัน)
   for (let tries = 0; tries < 8 && newCount === 0 && !liveExhausted; tries++) {
     data = await fetchLiveSteamPage(liveStart, params);
-    if (gen !== liveGen) return false;  // ถูก reset ระหว่างรอ → ทิ้งผลเก่า (call ใหม่จะคุม liveLoading เอง)
+    if (gen !== liveGen) return false;
     if (!data) break;
     const rawCount = data.rawCount || (data.games || []).length || 0;
     liveTotal = data.total || liveTotal || rawCount;
@@ -214,7 +212,7 @@ async function loadMoreLive(reset = false) {
     const seen = new Set(LIVE_VIEW.map(g => g.appid));
     const fresh = [];
     for (const g of merged) {
-      if (seen.has(g.appid)) continue;   // กันซ้ำทั้งกับหน้าก่อน และซ้ำภายในหน้าเดียวกัน
+      if (seen.has(g.appid)) continue;
       seen.add(g.appid);
       fresh.push(g);
     }
@@ -292,14 +290,16 @@ async function fetchSteam(force = false) {
   const liveLoaded = await loadMoreLive(true);
   if (liveLoaded || LIVE_VIEW.length) {
     dataSource = 'live';
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-      games: ALL_GAMES,
-      liveView: LIVE_VIEW,
-      ts: fetchedAt.getTime(),
-      liveStart,
-      liveTotal,
-      liveKey,
-    }));
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+        games: ALL_GAMES,
+        liveView: LIVE_VIEW,
+        ts: fetchedAt.getTime(),
+        liveStart,
+        liveTotal,
+        liveKey,
+      }));
+    } catch {}
     document.getElementById('liveDot').style.display = 'block';
     document.getElementById('liveLabel').style.display = 'block';
     spinRefresh(false);
@@ -349,7 +349,7 @@ async function fetchSteam(force = false) {
   const liveCount = merged.length;
   if (liveCount > 0) {
     dataSource = steamGames.length > 0 ? 'live' : 'cache';
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ games: ALL_GAMES, ts: fetchedAt.getTime() }));
+    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ games: ALL_GAMES, ts: fetchedAt.getTime() })); } catch {}
     setStatus('success', `ดึงข้อมูลสำรองสำเร็จ — Steam ${steamGames.length} + CheapShark ${cheapSharkGames.length} เกม`);
     document.getElementById('liveDot').style.display = 'block';
     document.getElementById('liveLabel').style.display = 'block';
@@ -366,11 +366,8 @@ async function fetchSteam(force = false) {
   startAutoUpdate();
 }
 
-// ปุ่มรีเฟรช = รีโหลดหน้าเต็มแบบ Ctrl+Shift+R: ล้าง cache ข้อมูล แล้วโหลดหน้าใหม่
-// (script/CSS จะถูกดึงสดด้วย timestamp ใหม่จาก loader ใน index.html)
 function hardReload() {
   try { sessionStorage.removeItem(CACHE_KEY); } catch {}
-  // ไป URL ที่มี token ใหม่ → guard ใน <head> จะดึง HTML/JS/CSS สดทั้งหมด (เทียบเท่า Ctrl+Shift+R)
   location.replace(location.pathname + '?r=' + Date.now());
 }
 
@@ -379,7 +376,6 @@ function startAutoUpdate() {
   updateTimestamp();
   autoTimer = setInterval(() => {
     updateTimestamp();
-    // รีเฟรชสดอัตโนมัติเฉพาะตอนผู้ใช้อยู่บนสุดของหน้า เพื่อไม่รีเซ็ตตำแหน่งที่กำลังเลื่อนดูอยู่
     const atTop = window.scrollY < 300;
     const stale = fetchedAt && Date.now() - fetchedAt.getTime() >= CACHE_TTL;
     if (stale && atTop && S.tab !== 'wish' && document.visibilityState === 'visible') {
@@ -457,12 +453,9 @@ function saveWishlist() {
 function updateStats() {
   const paid = ALL_GAMES.filter(g => !g.free && !g.type && g.sale > 0);
   const free = ALL_GAMES.filter(g => g.free);
-  const dlc = ALL_GAMES.filter(g => g.type === 'dlc');
-  // ในโหมด live ให้ stTotal แสดงยอดรวมจริงจาก Steam ไม่ใช่แค่ที่โหลดมา
   const liveSaleMode = dataSource === 'live' && (S.tab === 'sale' || S.tab === 'dlc') && liveTotal > 0;
   const totalCount = liveSaleMode ? liveTotal : paid.length;
   document.getElementById('stTotal').textContent = totalCount.toLocaleString();
-  // คิดส่วนลดจากรายการที่กำลังแสดงอยู่จริง (LIVE_VIEW ในโหมด live)
   const sample = (dataSource === 'live' && LIVE_VIEW.length) ? LIVE_VIEW.filter(g => !g.free) : paid;
   const discs = sample.map(x => x.disc).filter(x => x > 0);
   document.getElementById('stMax').textContent = (discs.length ? Math.max(...discs) : 0) + '%';
@@ -470,8 +463,6 @@ function updateStats() {
   document.getElementById('stAvg').textContent = avg + '%';
   const freeCount = (dataSource === 'live' && S.tab === 'free' && liveTotal > 0) ? liveTotal : free.length;
   document.getElementById('stFree').textContent = freeCount.toLocaleString();
-  const dlcEl = document.getElementById('stDlc');
-  if (dlcEl) dlcEl.textContent = dlc.length;
 }
 
 function getPool() {
@@ -488,8 +479,6 @@ function getPool() {
 function buildFilteredList() {
   let list = getPool();
 
-  // โหมด live: กรอง+เรียงทำที่เซิร์ฟเวอร์แล้ว (Steam) คืนลำดับเดิมเพื่อให้ infinite scroll ต่อท้ายแบบเสถียร
-  // กันเกมฟรี (ราคา 0) หลุดมาในแท็บลดราคา/DLC แม้ worker ตัวเก่ายังไม่กรอง
   if (isLiveMode()) return (S.tab === 'sale' || S.tab === 'dlc') ? list.filter(g => !g.free) : list;
 
   if (!isLiveMode() && (S.tab === 'sale' || S.tab === 'dlc')) {
@@ -514,9 +503,6 @@ function buildFilteredList() {
 
   return list;
 }
-
-// appid ที่ render ลง DOM ไปแล้ว — กันการ์ดซ้ำเด็ดขาดไม่ว่า data จะซ้ำมาจากไหน
-let renderedIds = new Set();
 
 function render() {
   const list = buildFilteredList();
@@ -582,7 +568,6 @@ function loadMore() {
   });
 }
 
-// ดึงหน้าถัดไปจาก Steam ล่วงหน้าเมื่อ buffer ใกล้หมด เพื่อให้เลื่อนได้ต่อเนื่องไม่สะดุด
 function maybePrefetchLive() {
   if (isLiveMode() && !liveExhausted && !liveLoading && (S.filtered.length - S.shown) < S.perPage) {
     loadMoreLive(false);
@@ -602,7 +587,7 @@ function cardHTML(g) {
   const badge = g.disc > 0 && !g.free
     ? `<div class="dbadge">-${g.disc}%</div>` : '';
   const dlcBadge = g.type === 'dlc'
-    ? `<div class="dbadge" style="background:#8b5cf6">DLC</div>` : '';
+    ? `<div class="dbadge dlc">DLC</div>` : '';
   const tags = g.tags.slice(0, 2).map(t => `<span class="gtag2">${esc(t)}</span>`).join('');
 
   const priceHtml = g.free
@@ -632,7 +617,7 @@ function cardHTML(g) {
       <div class="gtags2">${tags}</div>
       <div class="grow">
         <div>${origHtml} ${priceHtml}</div>
-        ${g.rating > 0 ? `<span class="grating">⭐ ${g.rating}%</span>` : ''}
+        ${g.rating > 0 ? `<span class="grating">${icon('star')} ${g.rating}%</span>` : ''}
       </div>
     </div>
   </a>`;
@@ -756,18 +741,16 @@ let searchTimer;
 function doSearch() {
   clearTimeout(searchTimer);
   const v = document.getElementById('searchInput').value.trim();
-  if (v === S.search) return;   // ไม่เปลี่ยน ไม่ต้องค้นซ้ำ
+  if (v === S.search) return;
   S.search = v;
   if (isLiveMode()) loadMoreLive(true);
   else render();
 }
 const searchInput = document.getElementById('searchInput');
-// พิมพ์แล้วค้นอัตโนมัติ (debounce) — ไม่ต้องกดอะไร
 searchInput.addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(doSearch, 450);
 });
-// กด Enter = ค้นทันที
 searchInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
 });
@@ -800,7 +783,6 @@ document.getElementById('sortSel').addEventListener('change', e => {
 
 document.getElementById('sbBudget').addEventListener('input', updateSidebarBudget);
 
-// เติมไอคอน Lucide ให้ element ที่มี data-icon ใน HTML (header, tabs, ปุ่ม ฯลฯ)
 function hydrateIcons(root = document) {
   root.querySelectorAll('[data-icon]').forEach(el => {
     el.innerHTML = icon(el.dataset.icon, el.dataset.iconClass || '');
