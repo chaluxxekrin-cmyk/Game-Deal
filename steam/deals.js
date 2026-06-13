@@ -12,8 +12,8 @@ const PROXIES = [
   u => `https://thingproxy.freeboard.io/fetch/${u}`,
 ];
 
-const BUILD = 'v13-2026-06-14';
-console.log('SteamDeal ' + BUILD);
+const BUILD = 'v16-2026-06-14';
+console.log('GameDeal ' + BUILD);
 const CACHE_KEY = 'steamdeal_v8';
 
 const ICONS = {
@@ -305,7 +305,6 @@ async function fetchSteam(force = false) {
     spinRefresh(false);
     updateStats();
     startAutoUpdate();
-    showToast(`โหลดจาก Steam สด ${LIVE_VIEW.length} เกม`);
     return;
   }
 
@@ -353,7 +352,6 @@ async function fetchSteam(force = false) {
     setStatus('success', `ดึงข้อมูลสำรองสำเร็จ — Steam ${steamGames.length} + CheapShark ${cheapSharkGames.length} เกม`);
     document.getElementById('liveDot').style.display = 'block';
     document.getElementById('liveLabel').style.display = 'block';
-    showToast(`โหลดสำรอง ${liveCount} เกม`);
   } else {
     dataSource = 'fallback';
     setStatus('error', 'เชื่อมต่อ Steam ไม่ได้ — ลองรีเฟรชอีกครั้ง');
@@ -738,8 +736,12 @@ document.querySelectorAll('.tb').forEach(b => {
     localStorage.setItem('th', b.dataset.t);
   });
 });
-const savedTh = localStorage.getItem('th');
+const THEMES = ['mono', 'dark', 'steam', 'paper'];
+let savedTh = localStorage.getItem('th');
+if (savedTh === 'rose') savedTh = 'paper';
+if (savedTh && !THEMES.includes(savedTh)) savedTh = null;
 if (savedTh) {
+  localStorage.setItem('th', savedTh);
   document.documentElement.setAttribute('data-theme', savedTh);
   document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.t === savedTh));
 }

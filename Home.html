@@ -15,17 +15,17 @@
   }
 })();
 </script>
-<title>SteamDeal — เกมลดราคาเรียลไทม์</title>
+<title>GameDeal — Now</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>document.write('<link rel="stylesheet" href="steamdeal.css?t=' + Date.now() + '">');</script>
-<noscript><link rel="stylesheet" href="steamdeal.css"></noscript>
+<script>document.write('<link rel="stylesheet" href="steam/deals.css?t=' + Date.now() + '">');</script>
+<noscript><link rel="stylesheet" href="steam/deals.css"></noscript>
 </head>
 <body>
 
 <header>
   <div class="hi">
-    <a class="logo" href="#">Steam<span>Deal</span></a>
+    <a class="logo" href="#">Game<span>Deal</span></a>
     <div class="live-dot" id="liveDot" style="display:none"></div>
     <span class="live-label" id="liveLabel" style="display:none">LIVE</span>
     <span class="updated-at" id="updatedAt"></span>
@@ -41,8 +41,7 @@
         <button class="tb on" data-t="mono" title="Mono"></button>
         <button class="tb" data-t="dark" title="Dark"></button>
         <button class="tb" data-t="steam" title="Steam"></button>
-        <button class="tb" data-t="rose" title="Rose"></button>
-        <button class="tb" data-t="forest" title="Forest"></button>
+        <button class="tb" data-t="paper" title="Paper"></button>
       </div>
     </div>
   </div>
@@ -144,8 +143,8 @@
 <script>
 (function () {
   var t = Date.now();
-  document.write('<script src="steamdeal.config.js?t=' + t + '"><\/script>');
-  document.write('<script src="steamdeal.js?t=' + t + '"><\/script>');
+  document.write('<script src="config.js?t=' + t + '"><\/script>');
+  document.write('<script src="steam/deals.js?t=' + t + '"><\/script>');
 })();
 </script>
 </body>
