@@ -12,9 +12,28 @@ const PROXIES = [
   u => `https://thingproxy.freeboard.io/fetch/${u}`,
 ];
 
-const BUILD = 'v8-2026-06-13';
+const BUILD = 'v9-2026-06-13';
 console.log(`%cSteamDeal build ${BUILD}`, 'color:#4ade80;font-weight:700');
 const CACHE_KEY = 'steamdeal_v8';
+
+// ไอคอนจาก Lucide (https://lucide.dev/icons) ฝัง SVG ตรงๆ ใช้ currentColor ปรับสี/ขนาดตาม font ได้
+const ICONS = {
+  search: '<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>',
+  filter: '<path d="M10 5H3"/><path d="M12 19H3"/><path d="M14 3v4"/><path d="M16 17v4"/><path d="M21 12h-9"/><path d="M21 19h-5"/><path d="M21 5h-7"/><path d="M8 10v4"/><path d="M8 12H3"/>',
+  refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+  zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  gift: '<path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/>',
+  puzzle: '<path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/>',
+  heart: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',
+  gamepad: '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>',
+  loader: '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+  check: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  package: '<path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/>',
+  alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+};
+function icon(name, cls = '') {
+  return `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+}
 const CACHE_TTL = 2 * 60 * 1000;
 const THB_RATE = 33;
 const LIVE_API_BASE = (window.STEAMDEAL_API_BASE || '').replace(/\/$/, '');
@@ -381,9 +400,9 @@ function spinRefresh(on) {
 function setStatus(type, msg) {
   const b = document.getElementById('statusBanner');
   b.className = 'status-banner ' + (type === 'success' ? 'success' : type === 'error' ? 'error' : '');
-  const icons = { loading: '⏳', success: '✅', cache: '📦', error: '⚠️' };
+  const icons = { loading: icon('loader', 'spin'), success: icon('check'), cache: icon('package'), error: icon('alert') };
   const labels = { live: 'LIVE', cache: 'CACHED', fallback: 'OFFLINE' };
-  b.innerHTML = `<span>${icons[type] || '•'}</span><span class="s-text">${msg}</span><span class="src-chip ${dataSource}">${labels[dataSource] || ''}</span>`;
+  b.innerHTML = `<span class="s-ic">${icons[type] || ''}</span><span class="s-text">${msg}</span><span class="src-chip ${dataSource}">${labels[dataSource] || ''}</span>`;
   updateTimestamp();
 }
 
@@ -519,7 +538,7 @@ function loadMore() {
     document.getElementById('lmi').style.display = 'none';
     if (S.page === 0) {
       document.getElementById('gameGrid').innerHTML = `
-        <div class="empty"><div class="big">🎮</div><p>ไม่พบเกมที่ตรงเงื่อนไข</p></div>`;
+        <div class="empty"><div class="big">${icon('gamepad')}</div><p>ไม่พบเกมที่ตรงเงื่อนไข</p></div>`;
     }
     document.getElementById('rcCount').textContent = `${S.filtered.length} รายการ`;
     S.loading = false;
@@ -597,7 +616,7 @@ function cardHTML(g) {
       ${badge}${dlcBadge}
       <button class="wbtn${inW ? ' on' : ''}" data-id="${g.appid}"
         onclick="event.preventDefault();event.stopPropagation();toggleWish(event,${g.appid})"
-        aria-label="Wishlist">${inW ? '❤️' : '🤍'}</button>
+        aria-label="Wishlist">${icon('heart')}</button>
     </div>
     <div class="gi">
       <div class="gname">${esc(g.name)} ${sourceChip}</div>
@@ -614,8 +633,13 @@ function cardHTML(g) {
 function switchTab(tab) {
   S.tab = tab;
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  const titles = { sale: '⚡ เกมลดราคาตอนนี้', free: '🆓 เกมฟรีเล่นได้เลย', wish: '❤️ Wishlist ของคุณ', dlc: '🎁 DLC ลดราคา' };
-  document.getElementById('secTitle').textContent = titles[tab] || '';
+  const titles = {
+    sale: `${icon('zap')} เกมลดราคาตอนนี้`,
+    free: `${icon('gift')} เกมฟรีเล่นได้เลย`,
+    wish: `${icon('heart')} Wishlist ของคุณ`,
+    dlc: `${icon('puzzle')} DLC ลดราคา`,
+  };
+  document.getElementById('secTitle').innerHTML = titles[tab] || '';
   const showSidebar = tab === 'sale' || tab === 'dlc';
   const sidebar = document.getElementById('sidebar');
   const layout = document.querySelector('.layout');
@@ -690,9 +714,7 @@ function toggleWish(e, id) {
     render();
   } else {
     document.querySelectorAll(`.wbtn[data-id="${id}"]`).forEach(btn => {
-      const inW = S.wishlist.has(id);
-      btn.classList.toggle('on', inW);
-      btn.textContent = inW ? '❤️' : '🤍';
+      btn.classList.toggle('on', S.wishlist.has(id));
     });
   }
 }
@@ -769,5 +791,14 @@ document.getElementById('sortSel').addEventListener('change', e => {
 });
 
 document.getElementById('sbBudget').addEventListener('input', updateSidebarBudget);
+
+// เติมไอคอน Lucide ให้ element ที่มี data-icon ใน HTML (header, tabs, ปุ่ม ฯลฯ)
+function hydrateIcons(root = document) {
+  root.querySelectorAll('[data-icon]').forEach(el => {
+    el.innerHTML = icon(el.dataset.icon, el.dataset.iconClass || '');
+    el.removeAttribute('data-icon');
+  });
+}
+hydrateIcons();
 
 fetchSteam();
