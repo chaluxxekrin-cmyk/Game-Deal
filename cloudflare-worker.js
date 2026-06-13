@@ -119,7 +119,6 @@ async function fetchSteamDeals(params, env, ctx) {
   api.searchParams.set('dynamic_data', '');
   api.searchParams.set('sort_by', SORT_MAP[sort] || '_ASC');
   if (mode === 'free') {
-    // เฉพาะเกมที่ "แจกฟรีชั่วคราว" (ลด 100% จากราคาเต็ม) ไม่เอาเกม free-to-play ถาวร
     api.searchParams.set('specials', '1');
     api.searchParams.set('maxprice', 'free');
     api.searchParams.set('category1', '998');

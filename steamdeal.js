@@ -99,8 +99,10 @@ const PROXIES = [
   u => `https://thingproxy.freeboard.io/fetch/${u}`,
 ];
 
-const CACHE_KEY = 'steamdeal_v4';
-const CACHE_TTL = 15 * 60 * 1000;
+const BUILD = 'v6-2026-06-13';
+console.log(`%cSteamDeal build ${BUILD}`, 'color:#4ade80;font-weight:700');
+const CACHE_KEY = 'steamdeal_v6';
+const CACHE_TTL = 2 * 60 * 1000;
 const THB_RATE = 33;
 const LIVE_API_BASE = (window.STEAMDEAL_API_BASE || '').replace(/\/$/, '');
 const LIVE_API = `${LIVE_API_BASE}/api/steam-deals`;
@@ -280,7 +282,12 @@ async function loadMoreLive(reset = false) {
     if (!rawCount || liveStart >= liveTotal) liveExhausted = true;
     const merged = mergeGames(data.games || []);
     const seen = new Set(LIVE_VIEW.map(g => g.appid));
-    const fresh = merged.filter(g => !seen.has(g.appid));
+    const fresh = [];
+    for (const g of merged) {
+      if (seen.has(g.appid)) continue;   // กันซ้ำทั้งกับหน้าก่อน และซ้ำภายในหน้าเดียวกัน
+      seen.add(g.appid);
+      fresh.push(g);
+    }
     if (fresh.length) {
       LIVE_VIEW.push(...fresh);
       newCount += fresh.length;
@@ -446,10 +453,13 @@ function startAutoUpdate() {
   updateTimestamp();
   autoTimer = setInterval(() => {
     updateTimestamp();
-    if (fetchedAt && Date.now() - fetchedAt.getTime() >= CACHE_TTL) {
+    // รีเฟรชสดอัตโนมัติเฉพาะตอนผู้ใช้อยู่บนสุดของหน้า เพื่อไม่รีเซ็ตตำแหน่งที่กำลังเลื่อนดูอยู่
+    const atTop = window.scrollY < 300;
+    const stale = fetchedAt && Date.now() - fetchedAt.getTime() >= CACHE_TTL;
+    if (stale && atTop && S.tab !== 'wish' && document.visibilityState === 'visible') {
       fetchSteam(true);
     }
-  }, 60000);
+  }, 30000);
 }
 
 function updateTimestamp() {
