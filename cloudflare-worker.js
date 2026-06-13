@@ -54,7 +54,33 @@ function priceToBaht(value) {
   return Number.isFinite(number) ? Math.round(number) : 0;
 }
 
-function parseRows(html) {
+let TAG_MAP = null;
+// ดึงรายชื่อ tag ทั้งหมดของ Steam ครั้งเดียว (tagid -> ชื่อ) แล้ว cache ไว้ยาว (tag ไม่ค่อยเปลี่ยน)
+async function getTagMap(ctx) {
+  if (TAG_MAP) return TAG_MAP;
+  const cacheUrl = new URL('https://steamdeal.local/tagmap');
+  const cache = caches.default;
+  const hit = await cache.match(cacheUrl);
+  if (hit) { TAG_MAP = await hit.json(); return TAG_MAP; }
+  try {
+    const res = await fetch('https://store.steampowered.com/tagdata/populartags/english', {
+      headers: { accept: 'application/json', 'user-agent': 'Mozilla/5.0 SteamDeal Worker' },
+    });
+    const arr = await res.json();
+    const map = {};
+    for (const t of arr) map[t.tagid] = t.name;
+    TAG_MAP = map;
+    const stored = new Response(JSON.stringify(map), {
+      headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=86400' },
+    });
+    ctx.waitUntil(cache.put(cacheUrl, stored));
+    return map;
+  } catch {
+    return {};
+  }
+}
+
+function parseRows(html, tagMap = {}) {
   const rows = html.match(/<a\b(?=[^>]*search_result_row)[\s\S]*?<\/a>/g) || [];
 
   return rows.map((row) => {
@@ -79,6 +105,7 @@ function parseRows(html) {
       .map(x => x.trim())
       .filter(Boolean);
     const genres = [...new Set(tagIds.map(id => TAG_GENRES[id]).filter(Boolean))];
+    const tags = tagIds.map(id => tagMap[id]).filter(Boolean).slice(0, 6);
     const release = textBetween(row, /search_released[^>]*>([\s\S]*?)<\/div>/);
     const ratingText = textBetween(row, /search_review_summary[^>]*data-tooltip-html="([^"]+)"/);
     const rating = Number((ratingText.match(/(\d+)%/) || [])[1] || 0);
@@ -93,9 +120,9 @@ function parseRows(html) {
       sale,
       disc,
       genres,
-      tags: [],
-      coop: false,
-      multi: false,
+      tags,
+      coop: tags.includes('Co-op') || tags.includes('Online Co-Op'),
+      multi: tags.includes('Multiplayer') || tags.includes('Multi-player'),
       rating,
       free: sale === 0,
       img,
@@ -146,8 +173,9 @@ async function fetchSteamDeals(params, env, ctx) {
   }
 
   const data = await response.json();
+  const tagMap = await getTagMap(ctx);
   const rawCount = (data.results_html || '').match(/<a\b(?=[^>]*search_result_row)[\s\S]*?<\/a>/g)?.length || 0;
-  const games = parseRows(data.results_html || '')
+  const games = parseRows(data.results_html || '', tagMap)
     .filter(game => {
       if (mode === 'free') return game.free;                         // เฉพาะเกมแจกฟรีชั่วคราว
       if (game.free) return false;                                   // ตัดเกมราคา 0 / parse พลาด ออกจาก sale/dlc
