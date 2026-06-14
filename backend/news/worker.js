@@ -1,18 +1,3 @@
-// News worker — permanently accumulates gaming headlines in Cloudflare D1 (SQL).
-// Old items are NEVER deleted; new ones are added on a schedule (deduped by URL).
-// /api/news reads the newest rows from D1 (does not hit the source feeds).
-//
-// Setup required (see backend/news/SETUP.md):
-//   1) Create a D1 database, bind it to this worker as variable name: NEWS_DB
-//   2) Create the table (schema below)
-//   3) Add a Cron Trigger (e.g. */15 * * * *) so scheduled() runs periodically
-//
-// Schema:
-//   CREATE TABLE IF NOT EXISTS news (
-//     url TEXT PRIMARY KEY, title TEXT, source TEXT, date INTEGER
-//   );
-//   CREATE INDEX IF NOT EXISTS idx_news_date ON news(date);
-
 const FEEDS = [
   { source: 'PC Gamer', url: 'https://www.pcgamer.com/rss/' },
   { source: 'Rock Paper Shotgun', url: 'https://www.rockpapershotgun.com/feed' },
