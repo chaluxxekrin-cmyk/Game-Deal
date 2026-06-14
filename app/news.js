@@ -3,7 +3,9 @@ window.News = (function () {
   const API = (window.NEWS_API_BASE || '').replace(/\/$/, '');
   let items = [];
   let loaded = false;
+  let built = false;
   let range = 'all';
+  let query = '';
 
   function T(k) { return (typeof window.t === 'function') ? window.t(k) : k; }
 
@@ -12,23 +14,24 @@ window.News = (function () {
   }
 
   function fmtDate(ms) {
-    const d = new Date(ms);
-    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+    return new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   function inRange(ms) {
     if (range === 'all') return true;
-    const day = new Date(ms).getDate();
-    if (range === 'early') return day <= 10;
-    if (range === 'mid') return day >= 11 && day <= 20;
-    if (range === 'late') return day >= 21;
+    const d = new Date(ms);
+    const now = new Date();
+    if (range === 'today') return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+    if (range === '10d') return ms >= Date.now() - 10 * 86400000;
+    if (range === 'month') return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
     return true;
   }
 
   function renderList() {
     const list = document.getElementById('newsList');
     if (!list) return;
-    const rows = items.filter(n => inRange(n.date));
+    const q = query.trim().toLowerCase();
+    const rows = items.filter(n => inRange(n.date) && (!q || n.title.toLowerCase().includes(q)));
     if (!rows.length) {
       list.innerHTML = `<div class="empty"><p>${T('empty')}</p></div>`;
       return;
@@ -44,7 +47,7 @@ window.News = (function () {
   function renderFilter() {
     const bar = document.getElementById('newsFilter');
     if (!bar) return;
-    const opts = [['all', 'n_all'], ['early', 'n_early'], ['mid', 'n_mid'], ['late', 'n_late']];
+    const opts = [['all', 'n_all'], ['today', 'n_today'], ['10d', 'n_10d'], ['month', 'n_month']];
     bar.innerHTML = opts.map(([v, k]) =>
       `<button class="nf-btn${v === range ? ' on' : ''}" data-r="${v}">${T(k)}</button>`).join('');
     bar.querySelectorAll('.nf-btn').forEach(b => b.addEventListener('click', () => {
@@ -56,25 +59,38 @@ window.News = (function () {
 
   function build() {
     const el = document.getElementById('newsView');
-    if (!el) return;
+    if (!el || built) return;
     el.innerHTML = `
-      <div class="news-filter" id="newsFilter"></div>
+      <div class="news-bar">
+        <div class="news-filter" id="newsFilter"></div>
+        <div class="news-search">
+          <span class="si" data-icon="search"></span>
+          <input type="text" id="newsSearch" autocomplete="off">
+        </div>
+      </div>
       <div class="news-list" id="newsList"><div class="lmi" style="display:block">${T('loading')}</div></div>`;
+    if (typeof hydrateIcons === 'function') hydrateIcons(el);
+    renderFilter();
+    const inp = document.getElementById('newsSearch');
+    inp.placeholder = T('news_search_ph');
+    let timer;
+    inp.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { query = inp.value; renderList(); }, 250);
+    });
+    built = true;
   }
 
   async function load() {
     try {
       const data = await (await fetch(`${API}/api/news`, { signal: AbortSignal.timeout(15000) })).json();
       items = Array.isArray(data.items) ? data.items : [];
+      loaded = true;
+      renderList();
     } catch (e) {
-      items = [];
       const list = document.getElementById('newsList');
       if (list) list.innerHTML = `<div class="empty"><p>${T('cant_connect')}</p></div>`;
-      return;
     }
-    loaded = true;
-    renderFilter();
-    renderList();
   }
 
   return {
@@ -82,18 +98,18 @@ window.News = (function () {
       const el = document.getElementById('newsView');
       if (el) el.style.display = '';
       build();
-      renderFilter();
-      if (!loaded) load(); else renderList();
+      if (!loaded) load();
     },
     hide() {
       const el = document.getElementById('newsView');
       if (el) el.style.display = 'none';
     },
     applyLang() {
-      if (document.getElementById('newsView') && document.getElementById('newsView').style.display !== 'none') {
-        renderFilter();
-        renderList();
-      }
+      if (!built) return;
+      renderFilter();
+      const inp = document.getElementById('newsSearch');
+      if (inp) inp.placeholder = T('news_search_ph');
+      if (loaded) renderList();
     },
   };
 })();

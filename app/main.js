@@ -1,4 +1,4 @@
-const BUILD = 'v3.0-2026-06-14';
+const BUILD = 'v3.1-2026-06-14';
 console.log('GameDeal ' + BUILD);
 
 const ICONS = {
@@ -419,7 +419,10 @@ function switchTab(tab) {
   else render();
 }
 
+let curView = 'deals';
 function setView(view) {
+  if (view === curView) return;
+  curView = view;
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.view === view));
   const deals = document.getElementById('dealsView');
   if (view === 'news') {

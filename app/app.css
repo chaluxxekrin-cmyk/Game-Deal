@@ -193,7 +193,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);position:
 .modal-go{display:block;text-align:center;padding:12px;background:var(--accent);color:var(--accent-text);border-radius:8px;font-weight:700;text-decoration:none;font-size:15px;transition:opacity .15s}
 .modal-go:hover{opacity:.88}
 
-.news-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.news-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.news-filter{display:flex;gap:8px;flex-wrap:wrap}
+.news-search{position:relative;flex:1;min-width:170px;max-width:300px}
+.news-search input{width:100%;padding:9px 12px 9px 32px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;outline:none;transition:border-color .15s}
+.news-search input:focus{border-color:var(--accent)}
 .nf-btn{padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
 .nf-btn:hover{border-color:var(--accent);color:var(--accent)}
 .nf-btn.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
@@ -252,6 +256,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);position:
   .news-item{flex-wrap:wrap;gap:6px 10px}
   .news-date{width:100%;order:3}
   .nf-btn{flex:1;text-align:center;min-height:40px}
+  .news-search{max-width:none;flex:1 1 100%}
+  .news-search input{font-size:16px}
 }
 
 @media(max-width:380px){

@@ -16,7 +16,7 @@ const I18N_DICT = {
     ago_s: '{n}s ago', ago_m: '{n}m ago', ago_h: '{n}h ago', updated: 'Updated {t}',
     nav_deals: 'Deals', nav_news: 'News', news_soon: 'News coming soon',
     view_store: 'View on store', price_hist: 'Price history', p_normal: 'Normal', p_now: 'Now', p_low: 'Lowest', all_time_low: 'All-time low',
-    n_all: 'All', n_early: 'Early', n_mid: 'Mid', n_late: 'Late',
+    n_all: 'All', n_today: 'Today', n_10d: 'Last 10 days', n_month: 'This month', news_search_ph: 'Search news...',
   },
   th: {
     search_ph: 'ค้นหาเกม...', filter: 'ตัวกรอง', refresh: 'รีเฟรช', search_btn: 'ค้นหา',
@@ -35,7 +35,7 @@ const I18N_DICT = {
     ago_s: '{n}s ที่แล้ว', ago_m: '{n} นาทีที่แล้ว', ago_h: '{n} ชม. ที่แล้ว', updated: 'อัปเดต {t}',
     nav_deals: 'ดีลเกม', nav_news: 'ข่าวสาร', news_soon: 'ข่าวสารเร็วๆ นี้',
     view_store: 'ดูที่ร้านค้า', price_hist: 'ประวัติราคา', p_normal: 'ราคาปกติ', p_now: 'ตอนนี้', p_low: 'ต่ำสุด', all_time_low: 'ต่ำสุดตลอดกาล',
-    n_all: 'ทั้งหมด', n_early: 'ต้นเดือน', n_mid: 'กลางเดือน', n_late: 'ปลายเดือน',
+    n_all: 'ทั้งหมด', n_today: 'วันนี้', n_10d: '10 วันล่าสุด', n_month: 'เดือนนี้', news_search_ph: 'ค้นหาข่าว...',
   },
   zh: {
     search_ph: '搜索游戏...', filter: '筛选', refresh: '刷新', search_btn: '搜索',
@@ -54,7 +54,7 @@ const I18N_DICT = {
     ago_s: '{n}秒前', ago_m: '{n}分钟前', ago_h: '{n}小时前', updated: '更新于 {t}',
     nav_deals: '优惠', nav_news: '新闻', news_soon: '新闻即将推出',
     view_store: '前往商店', price_hist: '价格历史', p_normal: '原价', p_now: '现价', p_low: '最低', all_time_low: '历史最低',
-    n_all: '全部', n_early: '上旬', n_mid: '中旬', n_late: '下旬',
+    n_all: '全部', n_today: '今天', n_10d: '近10天', n_month: '本月', news_search_ph: '搜索新闻...',
   },
   ko: {
     search_ph: '게임 검색...', filter: '필터', refresh: '새로고침', search_btn: '검색',
@@ -73,7 +73,7 @@ const I18N_DICT = {
     ago_s: '{n}초 전', ago_m: '{n}분 전', ago_h: '{n}시간 전', updated: '업데이트 {t}',
     nav_deals: '딜', nav_news: '뉴스', news_soon: '뉴스 준비 중',
     view_store: '상점에서 보기', price_hist: '가격 기록', p_normal: '정가', p_now: '현재', p_low: '최저', all_time_low: '역대 최저가',
-    n_all: '전체', n_early: '초순', n_mid: '중순', n_late: '하순',
+    n_all: '전체', n_today: '오늘', n_10d: '최근 10일', n_month: '이번 달', news_search_ph: '뉴스 검색...',
   },
   ms: {
     search_ph: 'Cari permainan...', filter: 'Penapis', refresh: 'Muat semula', search_btn: 'Cari',
@@ -92,7 +92,7 @@ const I18N_DICT = {
     ago_s: '{n}s lalu', ago_m: '{n}m lalu', ago_h: '{n}j lalu', updated: 'Dikemas kini {t}',
     nav_deals: 'Tawaran', nav_news: 'Berita', news_soon: 'Berita akan datang',
     view_store: 'Lihat di kedai', price_hist: 'Sejarah harga', p_normal: 'Biasa', p_now: 'Kini', p_low: 'Terendah', all_time_low: 'Terendah sepanjang masa',
-    n_all: 'Semua', n_early: 'Awal bulan', n_mid: 'Pertengahan', n_late: 'Akhir bulan',
+    n_all: 'Semua', n_today: 'Hari ini', n_10d: '10 hari lepas', n_month: 'Bulan ini', news_search_ph: 'Cari berita...',
   },
 };
 
