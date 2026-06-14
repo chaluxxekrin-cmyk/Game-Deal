@@ -65,6 +65,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);position:
 .dd.open .dd-chev{transform:rotate(180deg)}
 .dd-list{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:60;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .16s,transform .16s,visibility .16s;max-height:280px;overflow-y:auto}
 .dd.open .dd-list{opacity:1;visibility:visible;transform:translateY(0)}
+.dd.up .dd-list{top:auto;bottom:calc(100% + 5px);transform:translateY(6px)}
+.dd.up.open .dd-list{transform:translateY(0)}
 .dd-opt{padding:9px 11px;border-radius:5px;font-size:13px;color:var(--text2);cursor:pointer;white-space:nowrap;transition:background .12s,color .12s}
 .dd-opt:hover{background:var(--hover);color:var(--text)}
 .dd-opt.on{background:var(--accent);color:var(--accent-text);font-weight:600}

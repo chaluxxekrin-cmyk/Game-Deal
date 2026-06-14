@@ -655,10 +655,17 @@ function makeDropdown(container, options, current, onSelect) {
     <div class="dd-list">${options.map(o => `<div class="dd-opt${o.value === current ? ' on' : ''}" data-v="${esc(o.value)}">${esc(o.label)}</div>`).join('')}</div>`;
   const btn = container.querySelector('.dd-btn');
   const valEl = container.querySelector('.dd-val');
+  const list = container.querySelector('.dd-list');
   btn.addEventListener('click', e => {
     e.stopPropagation();
     const open = container.classList.contains('open');
     document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open'));
+    if (!open) {
+      const rect = btn.getBoundingClientRect();
+      const listH = Math.min(list.scrollHeight || 0, 280) + 12;
+      const below = window.innerHeight - rect.bottom;
+      container.classList.toggle('up', below < listH && rect.top > below);
+    }
     container.classList.toggle('open', !open);
   });
   container.querySelectorAll('.dd-opt').forEach(o => o.addEventListener('click', () => {
