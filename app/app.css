@@ -1,7 +1,7 @@
 :root[data-theme="mono"]{--bg:#f5f5f5;--surface:#fff;--surface2:#ebebeb;--border:#d0d0d0;--text:#111;--text2:#555;--text3:#999;--accent:#111;--accent-text:#fff;--sale-bg:#111;--sale-text:#fff;--tag-bg:#e8e8e8;--sh:0 1px 4px rgba(0,0,0,.1);--hover:#f0f0f0}
 :root[data-theme="dark"]{--bg:#0f0f13;--surface:#1a1a22;--surface2:#252530;--border:#2e2e3a;--text:#f0f0f0;--text2:#a0a0b0;--text3:#606070;--accent:#5865f2;--accent-text:#fff;--sale-bg:#5865f2;--sale-text:#fff;--tag-bg:#252530;--sh:0 2px 8px rgba(0,0,0,.5);--hover:#20202a}
 :root[data-theme="steam"]{--bg:#1b2838;--surface:#16202d;--surface2:#213246;--border:#2a475e;--text:#c6d4df;--text2:#8f98a0;--text3:#556772;--accent:#66c0f4;--accent-text:#1b2838;--sale-bg:#4c6b22;--sale-text:#a4d007;--tag-bg:#213246;--sh:0 2px 8px rgba(0,0,0,.6);--hover:#1e3344}
-:root[data-theme="paper"]{--bg:#f7f0d8;--surface:#fffdf3;--surface2:#efe6c6;--border:#dccfa3;--text:#3a3320;--text2:#6d6340;--text3:#a99c6e;--accent:#6e9d44;--accent-text:#fff;--sale-bg:#6e9d44;--sale-text:#fff;--tag-bg:#ece1bf;--sh:0 1px 4px rgba(120,100,40,.15);--hover:#f1e9ce}
+:root[data-theme="paper"]{--bg:#f7f0d8;--surface:#fffdf3;--surface2:#efe6c6;--border:#dccfa3;--text:#3a3320;--text2:#6d6340;--text3:#a99c6e;--accent:#241f17;--accent-text:#fff;--sale-bg:#241f17;--sale-text:#fff;--tag-bg:#ece1bf;--sh:0 1px 4px rgba(120,100,40,.15);--hover:#f1e9ce}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;transition:background .2s,color .2s;min-height:100vh}
 
@@ -31,7 +31,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);position:
 .tb[data-t="mono"]{background:conic-gradient(#111 0deg 180deg,#fff 180deg)}
 .tb[data-t="dark"]{background:conic-gradient(#1a1a22 0deg 180deg,#5865f2 180deg)}
 .tb[data-t="steam"]{background:conic-gradient(#1b2838 0deg 180deg,#66c0f4 180deg)}
-.tb[data-t="paper"]{background:conic-gradient(#f7f0d8 0deg 180deg,#6e9d44 180deg)}
+.tb[data-t="paper"]{background:conic-gradient(#f7f0d8 0deg 180deg,#241f17 180deg)}
 .refresh-btn{padding:5px 12px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'IBM Plex Mono',monospace;white-space:nowrap}
 .refresh-btn:hover{border-color:var(--accent);color:var(--accent)}
 .refresh-btn.spinning .ic{animation:spin .8s linear infinite}

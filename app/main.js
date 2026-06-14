@@ -1,4 +1,4 @@
-const BUILD = 'v19-2026-06-14';
+const BUILD = 'v20-2026-06-14';
 console.log('GameDeal ' + BUILD);
 
 const ICONS = {
