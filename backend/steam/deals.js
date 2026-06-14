@@ -11,7 +11,6 @@ const GENRE_TAGS = {
   Racing: 699,
   Sports: 701,
 };
-const TAG_GENRES = Object.fromEntries(Object.entries(GENRE_TAGS).map(([name, id]) => [String(id), name]));
 const SORT_MAP = {
   disc: '_ASC',
   pasc: 'Price_ASC',
@@ -93,7 +92,6 @@ function parseRows(html, tagMap = {}, cur = '$') {
       .split(',')
       .map(x => x.trim())
       .filter(Boolean);
-    const genres = [...new Set(tagIds.map(id => TAG_GENRES[id]).filter(Boolean))];
     const tags = tagIds.map(id => tagMap[id]).filter(Boolean).slice(0, 6);
     const release = textBetween(row, /search_released[^>]*>([\s\S]*?)<\/div>/);
     const ratingText = textBetween(row, /search_review_summary[^>]*data-tooltip-html="([^"]+)"/);
@@ -108,7 +106,6 @@ function parseRows(html, tagMap = {}, cur = '$') {
       orig,
       sale,
       disc,
-      genres,
       tags,
       coop: tags.includes('Co-op') || tags.includes('Online Co-Op'),
       multi: tags.includes('Multiplayer') || tags.includes('Multi-player'),
