@@ -204,6 +204,37 @@ async function fetchSteamDeals(params, ctx) {
   return out;
 }
 
+async function fetchSteamTop(cc, ctx) {
+  const cacheUrl = new URL(`https://steamdeal.local/api/steam-top?cc=${cc}`);
+  const cache = caches.default;
+  const hit = await cache.match(cacheUrl);
+  if (hit) return hit;
+
+  const api = new URL('https://store.steampowered.com/search/results/');
+  api.searchParams.set('start', '0');
+  api.searchParams.set('count', '50');
+  api.searchParams.set('dynamic_data', '');
+  api.searchParams.set('filter', 'topsellers');
+  api.searchParams.set('specials', '1');
+  api.searchParams.set('category1', '998');
+  api.searchParams.set('cc', cc);
+  api.searchParams.set('l', 'english');
+  api.searchParams.set('infinite', '1');
+
+  const response = await fetch(api, {
+    headers: { accept: 'application/json,text/plain,*/*', 'user-agent': 'Mozilla/5.0 SteamDeal Worker' },
+  });
+  if (!response.ok) return json({ games: [] });
+  const data = await response.json();
+  const tagMap = await getTagMap(ctx);
+  const games = parseRows(data.results_html || '', tagMap, CC_CUR[cc] || '$')
+    .filter(g => !g.free && g.disc > 0)
+    .slice(0, 20);
+  const out = json({ games, fetchedAt: Date.now() });
+  ctx.waitUntil(cache.put(cacheUrl, out.clone()));
+  return out;
+}
+
 async function fetchAppDetails(appid, cc, ctx) {
   const cacheUrl = new URL(`https://steamdeal.local/api/app?appid=${appid}&cc=${cc}`);
   const cache = caches.default;
@@ -240,6 +271,9 @@ export default {
     if (request.method === 'OPTIONS') return json({});
     if (url.pathname === '/api/app') {
       return fetchAppDetails(String(Number(url.searchParams.get('appid') || 0)), ccOf(url.searchParams.get('cc') || 'us'), ctx);
+    }
+    if (url.pathname === '/api/steam-top') {
+      return fetchSteamTop(ccOf(url.searchParams.get('cc') || 'us'), ctx);
     }
     if (url.pathname !== '/api/steam-deals') {
       return json({ ok: true, endpoint: '/api/steam-deals?start=0&count=60' });

@@ -186,6 +186,36 @@ async function fetchSteamDeals(params) {
   return payload;
 }
 
+async function fetchSteamTop(cc) {
+  const key = 'top:' + ccOf(cc);
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.ts < CACHE_MS) return hit.data;
+
+  const api = new URL('https://store.steampowered.com/search/results/');
+  api.searchParams.set('start', '0');
+  api.searchParams.set('count', '50');
+  api.searchParams.set('dynamic_data', '');
+  api.searchParams.set('filter', 'topsellers');
+  api.searchParams.set('specials', '1');
+  api.searchParams.set('category1', '998');
+  api.searchParams.set('cc', ccOf(cc));
+  api.searchParams.set('l', 'english');
+  api.searchParams.set('infinite', '1');
+
+  const response = await fetch(api, {
+    headers: { 'Accept': 'application/json,text/plain,*/*', 'User-Agent': 'Mozilla/5.0 GameDeal local' },
+  });
+  if (!response.ok) throw new Error(`Steam returned ${response.status}`);
+  const data = await response.json();
+  const tagMap = await getTagMap();
+  const games = parseRows(data.results_html || '', tagMap, CC_CUR[ccOf(cc)] || '$')
+    .filter(g => !g.free && g.disc > 0)
+    .slice(0, 20);
+  const payload = { games, fetchedAt: Date.now() };
+  cache.set(key, { ts: Date.now(), data: payload });
+  return payload;
+}
+
 async function fetchAppDetails(appid, cc) {
   const url = `https://store.steampowered.com/api/appdetails?appids=${appid}&cc=${ccOf(cc)}&l=english`;
   const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 GameDeal' } });
@@ -206,4 +236,4 @@ async function fetchAppDetails(appid, cc) {
   };
 }
 
-module.exports = { fetchSteamDeals, fetchAppDetails };
+module.exports = { fetchSteamDeals, fetchSteamTop, fetchAppDetails };

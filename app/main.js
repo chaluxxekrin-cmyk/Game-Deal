@@ -1,4 +1,4 @@
-const BUILD = 'v3.4-2026-06-14';
+const BUILD = 'v4.0-2026-06-14';
 console.log('GameDeal ' + BUILD);
 
 const ICONS = {
@@ -213,7 +213,7 @@ const CURRENCIES = [
   { code: 'gbp', cc: 'gb', sym: '£', label: 'GBP £' },
   { code: 'thb', cc: 'th', sym: '฿', label: 'THB ฿' },
   { code: 'jpy', cc: 'jp', sym: '¥', label: 'JPY ¥' },
-  { code: 'hkd', cc: 'hk', sym: 'HK$', label: 'HK$' },
+  { code: 'hkd', cc: 'hk', sym: 'HK $', label: 'HK $' },
   { code: 'krw', cc: 'kr', sym: '₩', label: 'KRW ₩' },
 ];
 function curInfo() {
@@ -245,8 +245,6 @@ function updateStats() {
   document.getElementById('stTotal').textContent = Number(totalCount).toLocaleString();
   const discs = paid.map(x => x.disc).filter(x => x > 0);
   document.getElementById('stMax').textContent = (discs.length ? Math.max(...discs) : 0) + '%';
-  const avg = discs.length ? Math.round(discs.reduce((a, x) => a + x, 0) / discs.length) : 0;
-  document.getElementById('stAvg').textContent = avg + '%';
   document.getElementById('stFree').textContent = Number(S.tab === 'free' ? (liveTotal || free.length) : free.length).toLocaleString();
 }
 
@@ -441,6 +439,41 @@ function setView(view) {
   }
 }
 
+let TOP_GAMES = [];
+let topReqId = 0;
+async function loadTopSellers() {
+  const cell = document.getElementById('topSell');
+  const track = document.getElementById('tsTrack');
+  if (!cell || !track) return;
+  if (!curSource || curSource.type !== 'steam') {
+    cell.style.display = 'none';
+    return;
+  }
+  cell.style.display = '';
+  const reqId = ++topReqId;
+  const base = (window.STEAMDEAL_API_BASE || '').replace(/\/$/, '');
+  try {
+    const data = await (await fetch(`${base}/api/steam-top?cc=${curInfo().cc}`)).json();
+    if (reqId !== topReqId) return;
+    const games = (data.games || []).map(g => ({ ...g, key: 'steam:' + g.appid, _source: 'steam' }));
+    TOP_GAMES = games;
+    if (!games.length) { track.innerHTML = ''; return; }
+    const item = g => `<button class="ts-item" data-key="${esc(g.key)}" title="${esc(g.name)}">
+      <img src="${g.img || `https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appid}/capsule_231x87.jpg`}" loading="lazy" alt="${esc(g.name)}">
+      <span class="ts-disc">-${g.disc}%</span></button>`;
+    track.innerHTML = (games.map(item).join('') + games.map(item).join(''));
+    track.style.animationDuration = Math.max(14, games.length * 2.2) + 's';
+  } catch {
+    if (reqId === topReqId) track.innerHTML = '';
+  }
+}
+document.getElementById('tsTrack').addEventListener('click', e => {
+  const b = e.target.closest('.ts-item');
+  if (!b) return;
+  const g = TOP_GAMES.find(x => x.key === b.dataset.key);
+  if (g && window.GameModal) GameModal.open(g);
+});
+
 function buildSourceSwitch() {
   const wrap = document.getElementById('sourceSwitch');
   if (!wrap) return;
@@ -475,6 +508,7 @@ function setSource(id) {
     document.querySelectorAll('.gt').forEach(x => x.classList.toggle('on', x.dataset.g === ''));
   }
   applySourceUI();
+  loadTopSellers();
   switchTab(S.tab);
 }
 
@@ -650,6 +684,7 @@ function buildCurrencyDropdown() {
     S.currency = v;
     localStorage.setItem('currency', v);
     applySourceUI();
+    loadTopSellers();
     if (isLiveMode()) loadMoreLive(true); else render();
   });
 }
