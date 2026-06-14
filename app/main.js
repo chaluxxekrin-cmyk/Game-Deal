@@ -660,6 +660,8 @@ const LANGS = [
   { value: 'zh', label: '中文' },
   { value: 'ko', label: '한국어' },
   { value: 'ms', label: 'Melayu' },
+  { value: 'ja', label: '日本語' },
+  { value: 'es', label: 'Español' },
 ];
 function buildLangDropdown() {
   makeDropdown(document.getElementById('langDd'), LANGS, getLang(), v => setLang(v));
