@@ -18,7 +18,7 @@ const SORT_MAP = {
   name: 'Name_ASC',
   rev: 'Reviews_DESC',
 };
-const CC_CUR = { us: '$', gb: '£', de: '€', jp: '¥', th: '฿', hk: 'HK$', kr: '₩' };
+const CC_CUR = { us: '$', gb: '£', de: '€', jp: '¥', th: '฿', hk: '$', kr: '₩' };
 function ccOf(cc) {
   return CC_CUR[cc] ? cc : 'us';
 }
