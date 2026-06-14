@@ -78,7 +78,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);position:
 .src-tab{padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'IBM Plex Mono',monospace}
 .src-tab:hover{border-color:var(--accent);color:var(--accent)}
 .src-tab.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
-.cur-wrap{margin-left:auto;padding-left:10px;border-left:1px solid var(--border);min-width:150px}
+.cur-wrap{margin-left:auto;min-width:150px}
 .cur-wrap .dd-btn{font-family:'IBM Plex Mono',monospace}
 .lp{display:flex;gap:3px}
 .lb{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all .15s}

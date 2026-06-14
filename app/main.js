@@ -1,4 +1,4 @@
-const BUILD = 'v20-2026-06-14';
+const BUILD = 'v23-2026-06-14';
 console.log('GameDeal ' + BUILD);
 
 const ICONS = {
@@ -61,7 +61,7 @@ function loadWishStore() {
 const _wl = loadWishStore();
 
 const S = {
-  tab: 'sale', disc: 0, genre: '', search: '', sort: 'disc',
+  tab: 'sale', disc: 0, genre: '', search: '', sort: 'disc', budget: 0,
   currency: localStorage.getItem('currency') || 'usd',
   wishlist: _wl.set,
   wishMap: _wl.map,
@@ -212,6 +212,8 @@ const CURRENCIES = [
   { code: 'gbp', cc: 'gb', sym: '£', label: 'GBP £' },
   { code: 'thb', cc: 'th', sym: '฿', label: 'THB ฿' },
   { code: 'jpy', cc: 'jp', sym: '¥', label: 'JPY ¥' },
+  { code: 'hkd', cc: 'hk', sym: 'HK$', label: 'HKD HK$' },
+  { code: 'krw', cc: 'kr', sym: '₩', label: 'KRW ₩' },
 ];
 function curInfo() {
   return CURRENCIES.find(c => c.code === S.currency) || CURRENCIES[0];
@@ -222,7 +224,7 @@ function curSym() {
 function money(v, cur) {
   const c = cur || curSym();
   const n = Number(v) || 0;
-  const s = (c === '¥' || Number.isInteger(n)) ? Math.round(n).toLocaleString() : n.toFixed(2);
+  const s = (c === '¥' || c === '₩' || Number.isInteger(n)) ? Math.round(n).toLocaleString() : n.toFixed(2);
   return c + s;
 }
 
@@ -256,8 +258,15 @@ function getPool() {
   return LIVE_VIEW;
 }
 
+function applyBudget(list) {
+  if (S.budget > 0 && (S.tab === 'sale' || S.tab === 'dlc')) {
+    return list.filter(g => !g.free && g.sale > 0 && g.sale <= S.budget);
+  }
+  return list;
+}
+
 function buildFilteredList() {
-  let list = getPool();
+  let list = applyBudget(getPool());
   if (isLiveMode()) return list;
 
   if (S.search) {
@@ -280,7 +289,6 @@ function render() {
   renderedIds = new Set();
   document.getElementById('gameGrid').innerHTML = '';
   loadMore();
-  updateSidebarBudget();
 }
 
 function loadMore() {
@@ -425,8 +433,6 @@ function applySourceUI() {
   });
   const genreSection = document.getElementById('genreSection');
   if (genreSection) genreSection.style.display = (adapter && adapter.genre) ? '' : 'none';
-  const bcur = document.querySelector('.bwrap span');
-  if (bcur) bcur.textContent = curSym();
   const curWrap = document.getElementById('currencyWrap');
   if (curWrap) curWrap.style.display = (curSource && curSource.type === 'cheapshark') ? 'none' : '';
   document.querySelectorAll('.src-tab').forEach(b => b.classList.toggle('on', b.dataset.src === (curSource && curSource.id)));
@@ -454,39 +460,19 @@ function closeSidebarMobile() {
   document.getElementById('sidebarOverlay').classList.remove('show');
 }
 
-function updateSidebarBudget() {
-  const b = parseFloat(document.getElementById('sbBudget').value);
-  const el = document.getElementById('sbRes');
-  if (!b || b <= 0) { el.textContent = ''; return; }
-  const cnt = S.filtered.filter(g => g.sale > 0 && g.sale <= b).length;
-  el.textContent = t('buy_count', { n: cnt });
-}
-
 function calcBudget() {
   const b = parseFloat(document.getElementById('budgetIn').value);
-  if (!b || b <= 0) { showToast(t('enter_budget')); return; }
-  const pool = LIVE_VIEW.filter(g => !g.free && g.sale > 0 && g.sale <= b).sort((a, c) => c.disc - a.disc);
+  S.budget = (b && b > 0) ? b : 0;
   const out = document.getElementById('budgetOut');
-  if (!pool.length) {
-    out.innerHTML = `<div class="bsum">${t('budget_none', { b: money(b) })}</div>`;
+  if (S.budget > 0) {
+    out.innerHTML = `<div class="bsum">${t('budget_showing', { b: money(S.budget) })}</div>`;
     out.classList.add('show');
-    return;
+  } else {
+    out.classList.remove('show');
+    out.innerHTML = '';
   }
-  let rem = b;
-  const bundle = [];
-  for (const g of pool) {
-    if (g.sale <= rem) { bundle.push(g); rem -= g.sale; }
-    if (bundle.length >= 5) break;
-  }
-  const total = bundle.reduce((s, g) => s + g.sale, 0);
-  out.innerHTML = `<div class="bsum">${t('budget_head', { b: money(b), n: pool.length })}</div>
-    <div class="blist">${bundle.map(g => `<div class="bi">
-      <img src="${cardImage(g)}" onerror="this.style.display='none'" alt="">
-      <span class="bin">${esc(g.name)}</span>
-      <span class="bip">${money(g.sale, g.cur)}</span>
-    </div>`).join('')}</div>
-    <div class="btot">${t('budget_tot', { t: money(total), r: money(b - total) })}</div>`;
-  out.classList.add('show');
+  if (S.tab !== 'sale' && S.tab !== 'dlc') switchTab('sale');
+  else render();
 }
 
 function toggleWish(key) {
@@ -587,7 +573,9 @@ document.querySelectorAll('.gt').forEach(b => {
   });
 });
 
-document.getElementById('sbBudget').addEventListener('input', updateSidebarBudget);
+document.getElementById('budgetIn').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); calcBudget(); }
+});
 
 function makeDropdown(container, options, current, onSelect) {
   container.classList.add('dd');
