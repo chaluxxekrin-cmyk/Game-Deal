@@ -1,4 +1,4 @@
-const BUILD = 'v23-2026-06-14';
+const BUILD = 'v24-2026-06-14';
 console.log('GameDeal ' + BUILD);
 
 const ICONS = {
@@ -406,7 +406,7 @@ function switchTab(tab) {
   const showSidebar = (tab === 'sale' || tab === 'dlc');
   const sidebar = document.getElementById('sidebar');
   const filterBtn = document.getElementById('filterBtn');
-  if (window.innerWidth > 768) sidebar.style.display = showSidebar ? '' : 'none';
+  if (window.innerWidth > 900) sidebar.style.display = showSidebar ? '' : 'none';
   document.querySelector('.layout').classList.toggle('full', !showSidebar);
   if (filterBtn) filterBtn.style.display = showSidebar ? '' : 'none';
   closeSidebarMobile();
@@ -618,12 +618,16 @@ function buildCurrencyDropdown() {
   });
 }
 
-document.querySelectorAll('.lb').forEach(b => {
-  b.addEventListener('click', () => {
-    setLang(b.dataset.l);
-    document.querySelectorAll('.lb').forEach(x => x.classList.toggle('on', x === b));
-  });
-});
+const LANGS = [
+  { value: 'en', label: 'EN' },
+  { value: 'th', label: 'ไทย' },
+  { value: 'zh', label: '中文' },
+  { value: 'ko', label: '한국어' },
+  { value: 'ms', label: 'Melayu' },
+];
+function buildLangDropdown() {
+  makeDropdown(document.getElementById('langDd'), LANGS, getLang(), v => setLang(v));
+}
 
 window.onLangChange = () => {
   setSecTitle();
@@ -638,8 +642,8 @@ function hydrateIcons(root = document) {
 }
 
 applyStaticLang();
-document.querySelectorAll('.lb').forEach(b => b.classList.toggle('on', b.dataset.l === getLang()));
 hydrateIcons();
+buildLangDropdown();
 buildSortDropdown();
 buildCurrencyDropdown();
 buildSourceSwitch();
