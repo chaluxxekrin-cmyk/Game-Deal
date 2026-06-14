@@ -186,4 +186,24 @@ async function fetchSteamDeals(params) {
   return payload;
 }
 
-module.exports = { fetchSteamDeals };
+async function fetchAppDetails(appid, cc) {
+  const url = `https://store.steampowered.com/api/appdetails?appids=${appid}&cc=${ccOf(cc)}&l=english`;
+  const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 GameDeal' } });
+  if (!res.ok) throw new Error('appdetails ' + res.status);
+  const j = await res.json();
+  const entry = j[appid];
+  if (!entry || !entry.success || !entry.data) return null;
+  const d = entry.data;
+  return {
+    appid: Number(appid),
+    name: d.name || '',
+    desc: d.short_description || '',
+    image: d.header_image || '',
+    screenshots: (d.screenshots || []).slice(0, 4).map(s => s.path_full || s.path_thumbnail).filter(Boolean),
+    genres: (d.genres || []).map(g => g.description),
+    release: (d.release_date && d.release_date.date) || '',
+    developers: d.developers || [],
+  };
+}
+
+module.exports = { fetchSteamDeals, fetchAppDetails };

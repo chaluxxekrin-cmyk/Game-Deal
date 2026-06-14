@@ -204,11 +204,43 @@ async function fetchSteamDeals(params, ctx) {
   return out;
 }
 
+async function fetchAppDetails(appid, cc, ctx) {
+  const cacheUrl = new URL(`https://steamdeal.local/api/app?appid=${appid}&cc=${cc}`);
+  const cache = caches.default;
+  const hit = await cache.match(cacheUrl);
+  if (hit) return hit;
+  const api = `https://store.steampowered.com/api/appdetails?appids=${appid}&cc=${cc}&l=english`;
+  const res = await fetch(api, { headers: { 'user-agent': 'Mozilla/5.0 SteamDeal Worker' } });
+  if (!res.ok) return json(null);
+  const data = await res.json();
+  const entry = data[appid];
+  let body = null;
+  if (entry && entry.success && entry.data) {
+    const d = entry.data;
+    body = {
+      appid: Number(appid),
+      name: d.name || '',
+      desc: d.short_description || '',
+      image: d.header_image || '',
+      screenshots: (d.screenshots || []).slice(0, 4).map(s => s.path_full || s.path_thumbnail).filter(Boolean),
+      genres: (d.genres || []).map(g => g.description),
+      release: (d.release_date && d.release_date.date) || '',
+      developers: d.developers || [],
+    };
+  }
+  const out = json(body);
+  ctx.waitUntil(cache.put(cacheUrl, out.clone()));
+  return out;
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') return json({});
+    if (url.pathname === '/api/app') {
+      return fetchAppDetails(String(Number(url.searchParams.get('appid') || 0)), ccOf(url.searchParams.get('cc') || 'us'), ctx);
+    }
     if (url.pathname !== '/api/steam-deals') {
       return json({ ok: true, endpoint: '/api/steam-deals?start=0&count=60' });
     }

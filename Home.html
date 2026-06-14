@@ -132,12 +132,13 @@
   </main>
 </div>
 
+<div class="modal-overlay" id="gameModal"></div>
 <div class="toast" id="toast"></div>
 
 <script>
 (function () {
   var t = Date.now();
-  ['config.js', 'app/i18n.js', 'app/news.js', 'sources/steam.js', 'sources/cheapshark.js', 'app/main.js'].forEach(function (src) {
+  ['config.js', 'app/i18n.js', 'app/news.js', 'app/modal.js', 'sources/steam.js', 'sources/cheapshark.js', 'app/main.js'].forEach(function (src) {
     document.write('<script src="' + src + '?t=' + t + '"><\/script>');
   });
 })();

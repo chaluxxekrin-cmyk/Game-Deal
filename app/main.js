@@ -1,4 +1,4 @@
-const BUILD = 'v2.6-2026-06-14';
+const BUILD = 'v2.7-2026-06-14';
 console.log('GameDeal ' + BUILD);
 
 const ICONS = {
@@ -12,6 +12,7 @@ const ICONS = {
   gamepad: '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>',
   star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
   chevron: '<path d="m6 9 6 6 6-6"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
 };
 function icon(name, cls = '') {
   return `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
@@ -371,11 +372,11 @@ function cardHTML(g) {
   const tags = (g.tags || []).slice(0, 2).map(t => `<span class="gtag2">${esc(t)}</span>`).join('');
 
   const priceHtml = g.free
-    ? `<span class="pfree">ฟรี</span>`
+    ? `<span class="pfree">${t('tab_free')}</span>`
     : `<span class="pnew">${money(g.sale, g.cur)}</span>`;
   const origHtml = g.disc > 0 && !g.free ? `<span class="porig">${money(g.orig, g.cur)}</span>` : '';
 
-  return `<a class="gc" href="${link}" target="_blank" rel="noopener">
+  return `<a class="gc" href="${link}" target="_blank" rel="noopener" data-key="${esc(g.key)}">
     <div class="gthumb">
       <img src="${img}" loading="lazy" alt="${esc(g.name)}"
         onerror="this.onerror=null;this.src='${fallback}';this.onerror=function(){this.style.display='none'}">
@@ -519,10 +520,19 @@ function toggleWish(key) {
 
 document.getElementById('gameGrid').addEventListener('click', e => {
   const btn = e.target.closest('.wbtn');
-  if (!btn) return;
+  if (btn) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWish(btn.dataset.key);
+    return;
+  }
+  const card = e.target.closest('.gc');
+  if (!card) return;
+  if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;
   e.preventDefault();
-  e.stopPropagation();
-  toggleWish(btn.dataset.key);
+  const key = card.dataset.key;
+  const g = LIVE_VIEW.find(x => x.key === key) || S.wishMap.get(key);
+  if (g && window.GameModal) GameModal.open(g);
 });
 
 function showToast(msg) {
