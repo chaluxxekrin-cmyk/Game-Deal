@@ -213,7 +213,7 @@ const CURRENCIES = [
   { code: 'gbp', cc: 'gb', sym: '£', label: 'GBP £' },
   { code: 'thb', cc: 'th', sym: '฿', label: 'THB ฿' },
   { code: 'jpy', cc: 'jp', sym: '¥', label: 'JPY ¥' },
-  { code: 'hkd', cc: 'hk', sym: 'HK$', label: 'HKD HK$' },
+  { code: 'hkd', cc: 'hk', sym: 'HK$', label: 'HK$' },
   { code: 'krw', cc: 'kr', sym: '₩', label: 'KRW ₩' },
 ];
 function curInfo() {
