@@ -1,4 +1,4 @@
-const BUILD = 'v24-2026-06-14';
+const BUILD = 'v25-2026-06-14';
 console.log('GameDeal ' + BUILD);
 
 const ICONS = {
@@ -399,19 +399,42 @@ function setSecTitle() {
   document.getElementById('secTitle').innerHTML = `${icon(TAB_ICON[S.tab] || 'zap')} ${t('title_' + S.tab)}`;
 }
 
-function switchTab(tab) {
-  S.tab = tab;
-  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  setSecTitle();
-  const showSidebar = (tab === 'sale' || tab === 'dlc');
+function applyTabLayout() {
+  const showSidebar = (S.tab === 'sale' || S.tab === 'dlc');
   const sidebar = document.getElementById('sidebar');
   const filterBtn = document.getElementById('filterBtn');
   if (window.innerWidth > 900) sidebar.style.display = showSidebar ? '' : 'none';
   document.querySelector('.layout').classList.toggle('full', !showSidebar);
   if (filterBtn) filterBtn.style.display = showSidebar ? '' : 'none';
+}
+
+function switchTab(tab) {
+  S.tab = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  setSecTitle();
+  applyTabLayout();
   closeSidebarMobile();
   if (isLiveMode()) loadMoreLive(true);
   else render();
+}
+
+function setView(view) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.view === view));
+  const deals = document.getElementById('dealsView');
+  if (view === 'news') {
+    deals.style.display = 'none';
+    const sidebar = document.getElementById('sidebar');
+    const filterBtn = document.getElementById('filterBtn');
+    if (window.innerWidth > 900) sidebar.style.display = 'none';
+    if (filterBtn) filterBtn.style.display = 'none';
+    document.querySelector('.layout').classList.add('full');
+    closeSidebarMobile();
+    if (window.News) News.show();
+  } else {
+    if (window.News) News.hide();
+    deals.style.display = '';
+    applyTabLayout();
+  }
 }
 
 function buildSourceSwitch() {
@@ -632,6 +655,7 @@ function buildLangDropdown() {
 window.onLangChange = () => {
   setSecTitle();
   buildSortDropdown();
+  if (window.News) News.applyLang();
 };
 
 function hydrateIcons(root = document) {

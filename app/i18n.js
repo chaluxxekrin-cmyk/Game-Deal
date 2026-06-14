@@ -14,6 +14,7 @@ const I18N_DICT = {
     budget_none: 'No items within {b}', budget_head: 'Budget {b} buys {n} items · suggested:', budget_tot: 'Total {t} · left {r}',
     budget_showing: 'Showing games within {b}',
     ago_s: '{n}s ago', ago_m: '{n}m ago', ago_h: '{n}h ago', updated: 'Updated {t}',
+    nav_deals: 'Deals', nav_news: 'News', news_soon: 'News coming soon',
   },
   th: {
     search_ph: 'ค้นหาเกม...', filter: 'ตัวกรอง', refresh: 'รีเฟรช', search_btn: 'ค้นหา',
@@ -30,6 +31,7 @@ const I18N_DICT = {
     budget_none: 'ไม่พบรายการในงบ {b}', budget_head: 'งบ {b} ซื้อได้ {n} รายการ · แนะนำชุดนี้:', budget_tot: 'รวม {t} · เหลือ {r}',
     budget_showing: 'แสดงเกมในงบ {b}',
     ago_s: '{n}s ที่แล้ว', ago_m: '{n} นาทีที่แล้ว', ago_h: '{n} ชม. ที่แล้ว', updated: 'อัปเดต {t}',
+    nav_deals: 'ดีลเกม', nav_news: 'ข่าวสาร', news_soon: 'ข่าวสารเร็วๆ นี้',
   },
   zh: {
     search_ph: '搜索游戏...', filter: '筛选', refresh: '刷新', search_btn: '搜索',
@@ -46,6 +48,7 @@ const I18N_DICT = {
     budget_none: '{b} 内没有项目', budget_head: '预算 {b} 可买 {n} 项 · 推荐：', budget_tot: '合计 {t} · 剩 {r}',
     budget_showing: '显示 {b} 以内的游戏',
     ago_s: '{n}秒前', ago_m: '{n}分钟前', ago_h: '{n}小时前', updated: '更新于 {t}',
+    nav_deals: '优惠', nav_news: '新闻', news_soon: '新闻即将推出',
   },
   ko: {
     search_ph: '게임 검색...', filter: '필터', refresh: '새로고침', search_btn: '검색',
@@ -62,6 +65,7 @@ const I18N_DICT = {
     budget_none: '{b} 이내 게임 없음', budget_head: '예산 {b}로 {n}개 구매 · 추천:', budget_tot: '합계 {t} · 남음 {r}',
     budget_showing: '{b} 이내 게임 표시',
     ago_s: '{n}초 전', ago_m: '{n}분 전', ago_h: '{n}시간 전', updated: '업데이트 {t}',
+    nav_deals: '딜', nav_news: '뉴스', news_soon: '뉴스 준비 중',
   },
   ms: {
     search_ph: 'Cari permainan...', filter: 'Penapis', refresh: 'Muat semula', search_btn: 'Cari',
@@ -78,6 +82,7 @@ const I18N_DICT = {
     budget_none: 'Tiada item dalam {b}', budget_head: 'Bajet {b} beli {n} item · cadangan:', budget_tot: 'Jumlah {t} · baki {r}',
     budget_showing: 'Menunjukkan permainan dalam {b}',
     ago_s: '{n}s lalu', ago_m: '{n}m lalu', ago_h: '{n}j lalu', updated: 'Dikemas kini {t}',
+    nav_deals: 'Tawaran', nav_news: 'Berita', news_soon: 'Berita akan datang',
   },
 };
 
