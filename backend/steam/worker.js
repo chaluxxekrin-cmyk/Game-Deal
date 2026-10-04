@@ -16,7 +16,7 @@ const SORT_MAP = {
   name: 'Name_ASC',
   rev: 'Reviews_DESC',
 };
-const CC_CUR = { us: '$', gb: '£', de: '€', jp: '¥', th: '฿', hk: '$', kr: '₩' };
+const CC_CUR = { us: '$', gb: '£', de: '€', jp: '¥', th: '฿', hk: 'HK$', kr: '₩' };
 function ccOf(cc) {
   return CC_CUR[cc] ? cc : 'us';
 }
@@ -149,7 +149,6 @@ async function fetchSteamDeals(params, ctx) {
   api.searchParams.set('dynamic_data', '');
   api.searchParams.set('sort_by', SORT_MAP[sort] || '_ASC');
   if (mode === 'free') {
-    api.searchParams.set('specials', '1');
     api.searchParams.set('maxprice', 'free');
     api.searchParams.set('category1', '998');
   } else if (mode === 'dlc') {

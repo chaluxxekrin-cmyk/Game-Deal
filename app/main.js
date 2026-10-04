@@ -151,6 +151,10 @@ async function loadMoreLive(reset = false) {
     hideLmi();
     return false;
   }
+  if (failed && newCount === 0) {
+    setLmi(t('cant_connect'));
+    return false;
+  }
 
   fetchedAt = new Date();
   document.getElementById('liveDot').style.display = 'block';
@@ -180,7 +184,8 @@ function startAutoUpdate() {
     updateTimestamp();
     const atTop = window.scrollY < 300;
     const stale = fetchedAt && Date.now() - fetchedAt.getTime() >= 2 * 60 * 1000;
-    if (stale && atTop && S.tab !== 'wish' && document.visibilityState === 'visible') {
+    const modalOpen = document.getElementById('gameModal').classList.contains('open');
+    if (stale && atTop && S.tab !== 'wish' && curView === 'deals' && !modalOpen && document.visibilityState === 'visible') {
       loadMoreLive(true);
     }
   }, 30000);
@@ -374,9 +379,9 @@ function cardHTML(g) {
     : `<span class="pnew">${money(g.sale, g.cur)}</span>`;
   const origHtml = g.disc > 0 && !g.free ? `<span class="porig">${money(g.orig, g.cur)}</span>` : '';
 
-  return `<a class="gc" href="${link}" target="_blank" rel="noopener" data-key="${esc(g.key)}">
+  return `<a class="gc" href="${esc(link)}" target="_blank" rel="noopener" data-key="${esc(g.key)}">
     <div class="gthumb">
-      <img src="${img}" loading="lazy" alt="${esc(g.name)}"
+      <img src="${esc(img)}" loading="lazy" alt="${esc(g.name)}"
         onerror="this.onerror=null;this.src='${fallback}';this.onerror=function(){this.style.display='none'}">
       ${badge}${dlcBadge}
       <button class="wbtn${inW ? ' on' : ''}" data-key="${esc(g.key)}" aria-label="Wishlist">${icon('heart')}</button>

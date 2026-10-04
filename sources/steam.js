@@ -5,6 +5,7 @@
   let total = 0;
   let exhausted = false;
   let params = {};
+  let epoch = 0;
 
   return {
     tabs: source.tabs || ['sale', 'free', 'dlc'],
@@ -12,6 +13,7 @@
 
     reset(p) {
       params = p || {};
+      epoch++;
       start = 0;
       total = 0;
       exhausted = false;
@@ -19,6 +21,7 @@
 
     async next() {
       if (exhausted) return { games: [], total, exhausted: true };
+      const myEpoch = epoch;
       const qs = new URLSearchParams({
         start: String(start),
         count: String(PAGE),
@@ -32,6 +35,7 @@
       const res = await fetch(`${API}/api/steam-deals?${qs}`, { signal: AbortSignal.timeout(12000) });
       if (!res.ok) throw new Error('steam ' + res.status);
       const data = await res.json();
+      if (myEpoch !== epoch) throw new Error('stale');
       if (!Array.isArray(data.games)) throw new Error('steam bad payload');
       const raw = data.rawCount || data.games.length || 0;
       total = data.total || total || raw;

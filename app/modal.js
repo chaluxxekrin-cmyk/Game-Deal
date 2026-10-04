@@ -2,6 +2,7 @@
 window.GameModal = (function () {
   const API = (window.STEAMDEAL_API_BASE || '').replace(/\/$/, '');
   let escHandler = null;
+  let openId = 0;
 
   function T(k) { return (typeof t === 'function') ? t(k) : k; }
   function fmtUSD(n) { return '$' + (Number(n) || 0).toFixed(2); }
@@ -23,6 +24,7 @@ window.GameModal = (function () {
   function open(g) {
     const o = document.getElementById('gameModal');
     if (!o || !g) return;
+    const id = ++openId;
     const link = (typeof cardLink === 'function') ? cardLink(g) : '#';
     const img = (typeof cardImage === 'function') ? cardImage(g) : (g.img || '');
     const tags = (g.tags || []).slice(0, 5).map(x => `<span class="gtag2">${esc2(x)}</span>`).join('');
@@ -52,14 +54,14 @@ window.GameModal = (function () {
     document.addEventListener('keydown', escHandler);
 
     if (g.appid) {
-      loadDetails(g.appid);
-      loadHistory(g.appid);
+      loadDetails(g.appid, id);
+      loadHistory(g.appid, id);
     }
   }
 
-  function loadDetails(appid) {
+  function loadDetails(appid, id) {
     fetch(`${API}/api/app?appid=${appid}`).then(r => r.json()).then(d => {
-      if (!d) return;
+      if (!d || id !== openId) return;
       const desc = document.getElementById('mDesc');
       if (desc && d.desc) desc.textContent = d.desc;
       const meta = document.getElementById('mMeta');
@@ -75,13 +77,14 @@ window.GameModal = (function () {
     }).catch(() => {});
   }
 
-  async function loadHistory(appid) {
-    const host = document.getElementById('mHist');
-    if (!host) return;
+  async function loadHistory(appid, id) {
+    if (!document.getElementById('mHist')) return;
     try {
       const arr = await (await fetch(`https://www.cheapshark.com/api/1.0/games?steamAppID=${appid}`)).json();
-      if (!Array.isArray(arr) || !arr.length) return;
+      if (!Array.isArray(arr) || !arr.length || id !== openId) return;
       const info = await (await fetch(`https://www.cheapshark.com/api/1.0/games?id=${arr[0].gameID}`)).json();
+      const host = document.getElementById('mHist');
+      if (!host || id !== openId) return;
       const deal = (info.deals || []).slice().sort((a, b) => parseFloat(a.price) - parseFloat(b.price))[0];
       if (!deal) return;
       const normal = parseFloat(deal.retailPrice) || 0;

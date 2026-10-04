@@ -10,6 +10,7 @@
   let page = 0;
   let exhausted = false;
   let params = {};
+  let epoch = 0;
 
   function normalize(d) {
     const sale = parseFloat(d.salePrice);
@@ -40,12 +41,14 @@
 
     reset(p) {
       params = p || {};
+      epoch++;
       page = 0;
       exhausted = false;
     },
 
     async next() {
       if (exhausted) return { games: [], total: 0, exhausted: true };
+      const myEpoch = epoch;
       const u = new URL('https://www.cheapshark.com/api/1.0/deals');
       u.searchParams.set('storeID', String(source.storeID));
       u.searchParams.set('pageSize', String(PAGE));
@@ -59,6 +62,7 @@
       const res = await fetch(u, { signal: AbortSignal.timeout(12000) });
       if (!res.ok) throw new Error('cheapshark ' + res.status);
       const arr = await res.json();
+      if (myEpoch !== epoch) throw new Error('stale');
       if (!Array.isArray(arr)) throw new Error('cheapshark bad payload');
       page += 1;
       if (arr.length < PAGE) exhausted = true;
@@ -71,7 +75,7 @@
       });
       if (games.length === 0) {
         if (free) exhausted = true;
-        else if (!arr.some(d => parseFloat(d.salePrice) === 0)) exhausted = true;
+        else if (by === 'Savings' && !arr.some(d => parseFloat(d.salePrice) === 0)) exhausted = true;
       }
       return { games, total: 0, exhausted };
     },
