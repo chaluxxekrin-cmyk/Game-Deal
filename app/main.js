@@ -73,6 +73,40 @@ function saveWishlist() {
   localStorage.setItem('wl_data', JSON.stringify([...S.wishMap.values()]));
 }
 
+// Wishlist items keep the price they were saved with. Re-price Steam ones that were saved
+// in another currency (Epic/CheapShark items are always USD, so they're left alone).
+const normCur = s => String(s || '').replace(/\s/g, '');
+let wishPriceGen = 0;
+async function refreshWishPrices() {
+  const target = curInfo();
+  const stale = [...S.wishMap.values()].filter(g => {
+    const src = sourceById(g._source);
+    return src && src.type === 'steam' && g.appid && normCur(g.cur) !== normCur(target.sym);
+  });
+  if (!stale.length) return;
+  const gen = ++wishPriceGen;
+  const base = (window.STEAMDEAL_API_BASE || '').replace(/\/$/, '');
+  const ids = stale.map(g => g.appid);
+  let changed = false;
+  for (let i = 0; i < ids.length; i += 50) {
+    let data;
+    try {
+      data = await (await fetch(`${base}/api/prices?appids=${ids.slice(i, i + 50).join(',')}&cc=${target.cc}`)).json();
+    } catch { continue; }
+    if (gen !== wishPriceGen) return;
+    for (const [id, p] of Object.entries(data.prices || {})) {
+      const key = 'steam:' + id;
+      const g = S.wishMap.get(key);
+      if (!g) continue;
+      S.wishMap.set(key, { ...g, ...p });
+      changed = true;
+    }
+  }
+  if (!changed) return;
+  saveWishlist();
+  if (S.tab === 'wish' && curView === 'deals') render();
+}
+
 function currentParams() {
   const filterable = S.tab === 'sale' || S.tab === 'dlc';
   return {
@@ -127,6 +161,7 @@ async function loadMoreLive(reset = false) {
 
   let newCount = 0;
   let failed = false;
+  const seen = new Set(LIVE_VIEW.map(g => g.key));
   for (let tries = 0; tries < 8 && newCount === 0 && !liveExhausted; tries++) {
     let r;
     try { r = await adapter.next(); } catch { r = null; }
@@ -134,7 +169,6 @@ async function loadMoreLive(reset = false) {
     if (!r) { failed = true; break; }
     liveTotal = r.total || liveTotal;
     if (r.exhausted) liveExhausted = true;
-    const seen = new Set(LIVE_VIEW.map(g => g.key));
     for (const g of (r.games || [])) {
       if (!g || seen.has(g.key)) continue;
       seen.add(g.key);
@@ -255,8 +289,15 @@ function updateStats() {
 
 function getPool() {
   if (S.tab === 'wish') {
+    // Prefer the freshly loaded copy only if it's already in the selected currency
+    const want = normCur(curInfo().sym);
+    const live = new Map(LIVE_VIEW.map(g => [g.key, g]));
     return [...S.wishlist]
-      .map(k => LIVE_VIEW.find(g => g.key === k) || S.wishMap.get(k))
+      .map(k => {
+        const l = live.get(k);
+        if (l && normCur(l.cur) === want) return l;
+        return S.wishMap.get(k) || l;
+      })
       .filter(Boolean);
   }
   return LIVE_VIEW;
@@ -420,6 +461,7 @@ function switchTab(tab) {
   closeSidebarMobile();
   if (isLiveMode()) loadMoreLive(true);
   else render();
+  if (tab === 'wish') refreshWishPrices();
 }
 
 let curView = 'deals';
@@ -698,6 +740,7 @@ function buildCurrencyDropdown() {
     applySourceUI();
     loadTopSellers();
     if (isLiveMode()) loadMoreLive(true); else render();
+    refreshWishPrices();
   });
 }
 
@@ -735,3 +778,5 @@ buildCurrencyDropdown();
 buildSourceSwitch();
 startAutoUpdate();
 if (SOURCES.length) setSource(SOURCES[0].id);
+// Warm the News feed once the deals view has settled
+(window.requestIdleCallback || (cb => setTimeout(cb, 2500)))(() => { if (window.News) News.prefetch(); }, { timeout: 5000 });

@@ -27,21 +27,54 @@ window.News = (function () {
     return true;
   }
 
+  const PAGE = 30;
+  let rows = [];
+  let shown = 0;
+  let io = null;
+
+  // Ask the image CDN for a card-sized copy instead of the full 1920px original.
+  function thumb(url) {
+    if (!url) return '';
+    if (/futurecdn\.net\//.test(url)) return url.replace(/-(\d{3,4})-(\d+)\.(jpe?g|png|webp)$/i, '-480-$2.$3');
+    if (/gnwcdn\.com\//.test(url)) {
+      try { const u = new URL(url); u.searchParams.set('width', '480'); u.searchParams.delete('height'); u.searchParams.delete('fit'); return u.href; } catch { return url; }
+    }
+    return url;
+  }
+
+  function cardHTML(n) {
+    const img = n.image
+      ? `<img src="${esc2(thumb(n.image))}" loading="lazy" decoding="async" alt="" onerror="this.remove()">`
+      : '';
+    return `
+      <a class="news-item" href="${esc2(n.url)}" target="_blank" rel="noopener">
+        <div class="news-thumb"><span class="news-ph">${esc2(n.source)}</span>${img}</div>
+        <div class="news-body">
+          <div class="news-meta"><span class="news-src">${esc2(n.source)}</span><span class="news-date">${n.date ? fmtDate(n.date) : ''}</span></div>
+          <span class="news-title">${esc2(n.title)}</span>
+        </div>
+      </a>`;
+  }
+
+  function renderMore() {
+    const list = document.getElementById('newsList');
+    if (!list || shown >= rows.length) return;
+    list.insertAdjacentHTML('beforeend', rows.slice(shown, shown + PAGE).map(cardHTML).join(''));
+    shown += PAGE;
+  }
+
   function renderList() {
     const list = document.getElementById('newsList');
     if (!list) return;
     const q = query.trim().toLowerCase();
-    const rows = items.filter(n => inRange(n.date) && (!q || n.title.toLowerCase().includes(q)));
+    rows = items.filter(n => inRange(n.date) && (!q || n.title.toLowerCase().includes(q)));
+    shown = 0;
     if (!rows.length) {
       list.innerHTML = `<div class="empty"><p>${T('empty')}</p></div>`;
       return;
     }
-    list.innerHTML = rows.map(n => `
-      <a class="news-item" href="${esc2(n.url)}" target="_blank" rel="noopener">
-        <span class="news-src">${esc2(n.source)}</span>
-        <span class="news-title">${esc2(n.title)}</span>
-        <span class="news-date">${n.date ? fmtDate(n.date) : ''}</span>
-      </a>`).join('');
+    list.innerHTML = '';
+    renderMore();
   }
 
   function renderFilter() {
@@ -68,7 +101,8 @@ window.News = (function () {
           <input type="text" id="newsSearch" autocomplete="off">
         </div>
       </div>
-      <div class="news-list" id="newsList"><div class="lmi" style="display:block">${T('loading')}</div></div>`;
+      <div class="news-list" id="newsList"><div class="lmi" style="display:block">${T('loading')}</div></div>
+      <div id="newsSentinel"></div>`;
     if (typeof hydrateIcons === 'function') hydrateIcons(el);
     renderFilter();
     const inp = document.getElementById('newsSearch');
@@ -78,19 +112,28 @@ window.News = (function () {
       clearTimeout(timer);
       timer = setTimeout(() => { query = inp.value; renderList(); }, 250);
     });
+    io = new IntersectionObserver(e => { if (e[0].isIntersecting) renderMore(); }, { rootMargin: '1000px' });
+    io.observe(document.getElementById('newsSentinel'));
     built = true;
   }
 
-  async function load() {
-    try {
-      const data = await (await fetch(`${API}/api/news`, { signal: AbortSignal.timeout(15000) })).json();
-      items = Array.isArray(data.items) ? data.items : [];
-      loaded = true;
-      renderList();
-    } catch (e) {
-      const list = document.getElementById('newsList');
-      if (list) list.innerHTML = `<div class="empty"><p>${T('cant_connect')}</p></div>`;
+  let pending = null;
+  function load() {
+    if (!pending) {
+      pending = fetch(`${API}/api/news`, { signal: AbortSignal.timeout(15000) })
+        .then(r => r.json())
+        .then(data => {
+          items = Array.isArray(data.items) ? data.items : [];
+          loaded = true;
+          renderList();
+        })
+        .catch(() => {
+          pending = null; // allow a retry next time the view opens
+          const list = document.getElementById('newsList');
+          if (list) list.innerHTML = `<div class="empty"><p>${T('cant_connect')}</p></div>`;
+        });
     }
+    return pending;
   }
 
   return {
@@ -98,8 +141,11 @@ window.News = (function () {
       const el = document.getElementById('newsView');
       if (el) el.style.display = '';
       build();
-      if (!loaded) load();
+      if (loaded) { if (!rows.length && items.length) renderList(); }
+      else load();
     },
+    // Fetch in the background (no DOM) so opening the News tab is instant.
+    prefetch() { if (!loaded) load(); },
     hide() {
       const el = document.getElementById('newsView');
       if (el) el.style.display = 'none';

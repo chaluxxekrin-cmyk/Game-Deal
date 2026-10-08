@@ -263,6 +263,35 @@ async function fetchAppDetails(appid, cc, ctx) {
   return out;
 }
 
+// Current prices for many apps in one Steam call (used to re-price the wishlist in the selected currency).
+// Steam reports amounts x100 for every currency, including JPY/KRW. Free games come back with data: [].
+async function fetchPrices(appids, cc, ctx) {
+  const cacheUrl = new URL(`https://steamdeal.local/api/prices?appids=${appids.join(',')}&cc=${cc}`);
+  const cache = caches.default;
+  const hit = await cache.match(cacheUrl);
+  if (hit) return hit;
+  const api = `https://store.steampowered.com/api/appdetails?appids=${appids.join(',')}&cc=${cc}&filters=price_overview`;
+  const res = await fetch(api, { headers: { 'user-agent': 'Mozilla/5.0 SteamDeal Worker' } });
+  if (!res.ok) return json({ prices: {} });
+  const data = await res.json();
+  const prices = {};
+  for (const id of appids) {
+    const entry = data[id];
+    if (!entry || !entry.success) continue;
+    const p = entry.data && entry.data.price_overview;
+    prices[id] = p
+      ? { orig: p.initial / 100, sale: p.final / 100, disc: p.discount_percent || 0, free: p.final === 0, cur: CC_CUR[cc] }
+      : { orig: 0, sale: 0, disc: 0, free: true, cur: CC_CUR[cc] };
+  }
+  const out = json({ prices });
+  ctx.waitUntil(cache.put(cacheUrl, out.clone()));
+  return out;
+}
+
+function parseAppids(raw) {
+  return [...new Set(String(raw || '').split(',').map(Number).filter(n => Number.isInteger(n) && n > 0))].slice(0, 100);
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -270,6 +299,11 @@ export default {
     if (request.method === 'OPTIONS') return json({});
     if (url.pathname === '/api/app') {
       return fetchAppDetails(String(Number(url.searchParams.get('appid') || 0)), ccOf(url.searchParams.get('cc') || 'us'), ctx);
+    }
+    if (url.pathname === '/api/prices') {
+      const appids = parseAppids(url.searchParams.get('appids'));
+      if (!appids.length) return json({ prices: {} });
+      return fetchPrices(appids, ccOf(url.searchParams.get('cc') || 'us'), ctx);
     }
     if (url.pathname === '/api/steam-top') {
       return fetchSteamTop(ccOf(url.searchParams.get('cc') || 'us'), ctx);

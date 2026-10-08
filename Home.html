@@ -7,17 +7,13 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script>
-(function () {
-  if (!/[?&]r=/.test(location.search)) {
-    location.replace(location.pathname + '?r=' + Date.now() + location.hash);
-  } else {
-    history.replaceState(null, '', location.pathname + location.hash);
-  }
-})();
+if (/[?&]r=/.test(location.search)) history.replaceState(null, '', location.pathname + location.hash);
 </script>
 <title>GameDeal — Now</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://steam-deal.chaluxxekrin.workers.dev" crossorigin>
+<link rel="dns-prefetch" href="https://gamenews.chaluxxekrin.workers.dev"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 <script>document.write('<link rel="stylesheet" href="app/app.css?t=' + Date.now() + '">');</script>
 <noscript><link rel="stylesheet" href="app/app.css"></noscript>
 </head>

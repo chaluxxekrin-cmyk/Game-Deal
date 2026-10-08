@@ -30,6 +30,15 @@ function pick(block, re) {
   return m ? m[1] : '';
 }
 
+// Feed image: media:content / media:thumbnail / image enclosure, else first <img> in the body.
+function pickImage(it) {
+  const tag = it.match(/<media:(?:content|thumbnail)\b[^>]*\burl="([^"]+)"[^>]*>/)
+    || it.match(/<enclosure\b(?=[^>]*type="image)[^>]*\burl="([^"]+)"[^>]*>/)
+    || it.match(/<img\b[^>]*\bsrc="([^"]+)"/);
+  const url = tag ? tag[1].replace(/&amp;/g, '&').trim() : '';
+  return /^https?:\/\//.test(url) ? url : '';
+}
+
 function parseFeed(xml, source) {
   const items = xml.match(/<item[\s\S]*?<\/item>/g) || xml.match(/<entry[\s\S]*?<\/entry>/g) || [];
   return items.map((it) => {
@@ -37,7 +46,7 @@ function parseFeed(xml, source) {
     const link = (pick(it, /<link[^>]*>([\s\S]*?)<\/link>/) || pick(it, /<link[^>]*href="([^"]+)"/)).trim();
     const pub = pick(it, /<pubDate>([\s\S]*?)<\/pubDate>/) || pick(it, /<dc:date>([\s\S]*?)<\/dc:date>/) || pick(it, /<published>([\s\S]*?)<\/published>/) || pick(it, /<updated>([\s\S]*?)<\/updated>/);
     const date = pub ? Date.parse(pub.trim()) : 0;
-    return { title, url: link, source, date: Number.isFinite(date) ? date : 0 };
+    return { title, url: link, source, date: Number.isFinite(date) ? date : 0, image: pickImage(it) };
   }).filter((x) => x.title && x.url);
 }
 

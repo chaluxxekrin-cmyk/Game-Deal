@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
-const { fetchSteamDeals, fetchSteamTop, fetchAppDetails } = require('./steam/deals.js');
+const { fetchSteamDeals, fetchSteamTop, fetchAppDetails, fetchPrices } = require('./steam/deals.js');
 const { fetchNews } = require('./news/news.js');
 
 const PORT = Number(process.env.PORT || 5173);
@@ -73,6 +73,11 @@ const server = http.createServer(async (req, res) => {
         url.searchParams.get('cc') || 'us'
       );
       send(res, 200, JSON.stringify(data));
+      return;
+    }
+    if (url.pathname === '/api/prices') {
+      const appids = [...new Set(String(url.searchParams.get('appids') || '').split(',').map(Number).filter(n => Number.isInteger(n) && n > 0))].slice(0, 100);
+      send(res, 200, JSON.stringify(appids.length ? await fetchPrices(appids, url.searchParams.get('cc') || 'us') : { prices: {} }));
       return;
     }
     if (url.pathname === '/api/news') {

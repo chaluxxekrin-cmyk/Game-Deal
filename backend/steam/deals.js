@@ -235,4 +235,24 @@ async function fetchAppDetails(appid, cc) {
   };
 }
 
-module.exports = { fetchSteamDeals, fetchSteamTop, fetchAppDetails };
+// Current prices for many apps in one Steam call. Steam reports amounts x100 for every
+// currency, including JPY/KRW. Free games come back with data: [].
+async function fetchPrices(appids, cc) {
+  const c = ccOf(cc);
+  const url = `https://store.steampowered.com/api/appdetails?appids=${appids.join(',')}&cc=${c}&filters=price_overview`;
+  const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 GameDeal' } });
+  if (!res.ok) throw new Error('prices ' + res.status);
+  const data = await res.json();
+  const prices = {};
+  for (const id of appids) {
+    const entry = data[id];
+    if (!entry || !entry.success) continue;
+    const p = entry.data && entry.data.price_overview;
+    prices[id] = p
+      ? { orig: p.initial / 100, sale: p.final / 100, disc: p.discount_percent || 0, free: p.final === 0, cur: CC_CUR[c] }
+      : { orig: 0, sale: 0, disc: 0, free: true, cur: CC_CUR[c] };
+  }
+  return { prices };
+}
+
+module.exports = { fetchSteamDeals, fetchSteamTop, fetchAppDetails, fetchPrices };

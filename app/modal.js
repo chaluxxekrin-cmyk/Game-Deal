@@ -3,9 +3,15 @@ window.GameModal = (function () {
   const API = (window.STEAMDEAL_API_BASE || '').replace(/\/$/, '');
   let escHandler = null;
   let openId = 0;
+  const histCache = new Map(); // appid -> Promise<{normal, now, low, lowDate} | null> (USD)
 
   function T(k) { return (typeof t === 'function') ? t(k) : k; }
-  function fmtUSD(n) { return '$' + (Number(n) || 0).toFixed(2); }
+  function fmt(n, cur) { return (typeof money === 'function') ? money(n, cur) : cur + (Number(n) || 0).toFixed(2); }
+  function curCode(cur) {
+    const norm = s => String(s).replace(/\s/g, '');
+    const c = (typeof CURRENCIES !== 'undefined') ? CURRENCIES.find(x => norm(x.sym) === norm(cur)) : null;
+    return c ? c.code.toUpperCase() : 'USD';
+  }
   function ic(name) { return (typeof icon === 'function') ? icon(name) : ''; }
   function esc2(s) { return (typeof esc === 'function') ? esc(s) : String(s); }
   function priceText(g) {
@@ -55,7 +61,7 @@ window.GameModal = (function () {
 
     if (g.appid) {
       loadDetails(g.appid, id);
-      loadHistory(g.appid, id);
+      loadHistory(g, id);
     }
   }
 
@@ -77,29 +83,50 @@ window.GameModal = (function () {
     }).catch(() => {});
   }
 
-  async function loadHistory(appid, id) {
+  function fetchHistory(appid) {
+    if (!histCache.has(appid)) {
+      const p = (async () => {
+        const arr = await (await fetch(`https://www.cheapshark.com/api/1.0/games?steamAppID=${appid}`)).json();
+        if (!Array.isArray(arr) || !arr.length) return null;
+        const info = await (await fetch(`https://www.cheapshark.com/api/1.0/games?id=${arr[0].gameID}`)).json();
+        const deal = (info.deals || []).slice().sort((a, b) => parseFloat(a.price) - parseFloat(b.price))[0];
+        if (!deal) return null;
+        const now = parseFloat(deal.price) || 0;
+        return {
+          normal: parseFloat(deal.retailPrice) || 0,
+          now,
+          low: info.cheapestPriceEver ? parseFloat(info.cheapestPriceEver.price) : now,
+          lowDate: info.cheapestPriceEver ? new Date(info.cheapestPriceEver.date * 1000) : null,
+        };
+      })().catch(() => { histCache.delete(appid); return null; });
+      histCache.set(appid, p);
+    }
+    return histCache.get(appid);
+  }
+
+  // CheapShark history is USD-only. Normal/Now use the game's own prices (already in the
+  // selected currency); the all-time low is scaled by the same local/USD ratio, so regional
+  // pricing (e.g. THB) stays realistic instead of a plain FX conversion.
+  async function loadHistory(g, id) {
     if (!document.getElementById('mHist')) return;
-    try {
-      const arr = await (await fetch(`https://www.cheapshark.com/api/1.0/games?steamAppID=${appid}`)).json();
-      if (!Array.isArray(arr) || !arr.length || id !== openId) return;
-      const info = await (await fetch(`https://www.cheapshark.com/api/1.0/games?id=${arr[0].gameID}`)).json();
-      const host = document.getElementById('mHist');
-      if (!host || id !== openId) return;
-      const deal = (info.deals || []).slice().sort((a, b) => parseFloat(a.price) - parseFloat(b.price))[0];
-      if (!deal) return;
-      const normal = parseFloat(deal.retailPrice) || 0;
-      const now = parseFloat(deal.price) || 0;
-      const low = info.cheapestPriceEver ? parseFloat(info.cheapestPriceEver.price) : now;
-      const lowDate = info.cheapestPriceEver ? new Date(info.cheapestPriceEver.date * 1000) : null;
-      const max = Math.max(normal, now, low) || 1;
-      const bar = (label, val, cls) =>
-        `<div class="hbar"><span class="hbl">${label}</span><span class="htrack"><span class="hfill ${cls}" style="width:${Math.max(4, val / max * 100)}%"></span></span><span class="hbv">${fmtUSD(val)}</span></div>`;
-      host.innerHTML = `<div class="hist-h">${T('price_hist')} <span class="hist-cur">(USD · CheapShark)</span></div>
-        ${bar(T('p_normal'), normal, 'normal')}
-        ${bar(T('p_now'), now, 'now')}
-        ${bar(T('p_low'), low, 'low')}
-        <div class="hist-low">${T('all_time_low')}: <b>${fmtUSD(low)}</b>${lowDate ? ' · ' + lowDate.toISOString().slice(0, 10) : ''}</div>`;
-    } catch (e) { /* ignore */ }
+    const h = await fetchHistory(g.appid);
+    const host = document.getElementById('mHist');
+    if (!h || !host || id !== openId) return;
+    const localNormal = !g.free ? (g.orig || g.sale || 0) : 0;
+    const local = localNormal > 0 && h.normal > 0;
+    const cur = local ? (g.cur || '$') : '$';
+    const normal = local ? localNormal : h.normal;
+    const now = local ? g.sale : h.now;
+    const low = local ? Math.min(now, h.low * (localNormal / h.normal)) : h.low;
+    const approx = local && curCode(cur) !== 'USD' ? '≈ ' : '';
+    const max = Math.max(normal, now, low) || 1;
+    const bar = (label, val, cls, pre = '') =>
+      `<div class="hbar"><span class="hbl">${label}</span><span class="htrack"><span class="hfill ${cls}" style="width:${Math.max(4, val / max * 100)}%"></span></span><span class="hbv">${pre}${fmt(val, cur)}</span></div>`;
+    host.innerHTML = `<div class="hist-h">${T('price_hist')} <span class="hist-cur">(${curCode(cur)} · CheapShark)</span></div>
+      ${bar(T('p_normal'), normal, 'normal')}
+      ${bar(T('p_now'), now, 'now')}
+      ${bar(T('p_low'), low, 'low', approx)}
+      <div class="hist-low">${T('all_time_low')}: <b>${approx}${fmt(low, cur)}</b>${h.lowDate ? ' · ' + h.lowDate.toISOString().slice(0, 10) : ''}</div>`;
   }
 
   return { open, close };
